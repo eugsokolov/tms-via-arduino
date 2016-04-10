@@ -1,59 +1,70 @@
 import serial
 import csv
+import time
 import datetime, os, syslog
-import Image
+import Image, subprocess
 import random
 
-def fire_tms():
-   #Make inter OS operable
+def fire_tms(port):
+#Make inter OS operable
+   port = "/tty/tty0"
    arduino = serial.Serial(port, 9600)
    arduino.write('fire')
 
-def show_picture(image_file, duration):
-   image = Image.open('image_file')
-   image.show()
-   delay(duration)
-   #CLOSE IMAGE
-
-def show_word(wordlist, duration):
-   #use generators for wordlist
+def process_word(config, i):
+#probably use generators
    return 0
 
-def process_fire(config, i):
-   if config['fire iteration'] is 'random':
-   	r = random.random()
-   	if r > 0.5:
-   	 fire = True
-   	else:
-   	 fire = False
+def process_picture(config, i):
+   fire = determine_fire(config['fire iteration'], i)
+   path, dirs, files = os.walk(config['directory']).next()
+   r = random.randrang(1,len(files)) 
+   image_file = files[r] 
+   #image = Image.open(image_file)
+   #image.show()
+   #time.sleep(float(duration)/1000)
+ 
+#   p = subprocess.Popen(["display", image_file])
+   if fire is True:
+	time.sleep(float(config['time to fire'])/1000)
+	tms_fire(config['TMS port'])
+	remaining = float(int(config['total time']) - int(config['time to fire']))/1000
+	time.sleep(remaining)
    else:
-	seq = config['fire iteration']
-	print seq
-	fire = False
+	time.sleep(float(config['total time'])/1000)
+#   p.terminate()
+#   p.kill()
+   return fire, image_file
+
+def determine_fire(fireiter, i):
+   if fireiter is 'random':
+   	r = random.random()
+   	if r > 0.5: fire = True
+   	else: fire = False
+   else:
+	if i in list(fireiter): fire = True
+	else: fire = False
    return fire
 
 def process_user(config):
-
    firelist = []
-   for i in config['iterations per user']:		
-   	if config['picture or word'] is 'word':
-   	 show_word(config['directory'], config['duration'])
-   	if config['picture or word'] is 'picture':
-   	 show_picture(config['directory'], config['duration'])
-   	#if config['picture or word'] is 'mouse':
-   	# show_mouse(config['mouse'])
+   outlist = []
+   for i in range(1, int(config['iterations per user'])+1):
+   	if config['type'] == 'picture':
+   	 fired, out = process_picture(config, i)
+   	elif config['type'] == 'word':
+   	 fired, out = process_word(config, i)
+   	#elif config['type'] is 'mouse':
+   	# fired, out = process_mouse(config, i)
+	else:
+	 print "Error in configuration type, input must be \"picture/word/mouse\""
+	 exit()
+#   	show_picture(config['ISI'], config['ISI duration'])
+   	if fired is True: firelist.append(i)
+	outlist.append(out)	
 
-   	fire = process_fire(config, i)
-   	if fire is True:
-   		fire_tms()	
-		firelist.append(i)
-
-   	show_picture(config['ISI'], config['ISI duration'])
-
-
-
-   if config['fire iteration'] is 'random':
-      config['fire iteration'] = firelist
+   config['fire iteration'] = firelist
+   config['out list'] = outlist
    return config
 
 def process_config(filename):
@@ -63,6 +74,7 @@ def process_config(filename):
    	for row in reader:
    		k, x, v = row
    		config[k] = v
+   config.pop('Name')
    return config	
 
 def input_user_data():
@@ -72,19 +84,23 @@ def input_user_data():
 
    filename = name + "-" + d + ".log"
    with open(filename, 'w') as f:
-      f.write("Time: " + d)
-      f.write("Name: " + name)
-      f.write("Gender: " + sex)
+      f.write("Time," + d + '\n')
+      f.write("Name," + name + '\n')
+      f.write("Gender," + sex + '\n')
+      f.close()
    return filename
 
 def log_user_data(info, filename):
-   with open(filename, 'w') as f:
-      f.write(info)
+   info.pop('number of users')
+   with open(filename, 'a') as f:
+	for k,v in sorted(info.items()):
+	   f.write(str(k) + ',' + str(v) + '\n')
+   f.close()
 
 def main():
    filename = "config.csv"
    config = process_config(filename)
-   for i in config['number of users']:
+   for i in range(1,int(config['number of users'])+1):
 	f = input_user_data()
    	info = process_user(config)
 	log_user_data(info, f)

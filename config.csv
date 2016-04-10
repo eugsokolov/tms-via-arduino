@@ -1,10 +1,11 @@
 Name,Options,Example
-number of users,Integer,3
+number of users,Integer,1
 iterations per user,Integer,10
-picture or word,String,picture
-directory,Directory Path,C:\\Documents\pictures
+type,word/picture/mouse,picture
+directory,Directory Path,.
 time to fire,Integer (ms),300
-fire iteration,"random, integer array","[1,3,5,7,9]"
+total time,Integer (ms),1000
+fire iteration,random/integer array,"[1,3,5,7,9]"
 TMS port,USB port number,USB1
-ISI,File Path,C:\\Documents\pictures\whitescreen.jpg
+ISI,File Path,whitescreen.png
 ISI duration,Integer (ms),1000
