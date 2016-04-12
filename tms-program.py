@@ -7,9 +7,10 @@ import random
 
 def fire_tms(port):
 #Make inter OS operable
-   port = "/tty/tty0"
+   port = "/dev/ttyACM0"
    arduino = serial.Serial(port, 9600)
-   arduino.write('fire')
+   arduino.write('1')
+   arduino.close()
 
 def process_word(config, i):
 #probably use generators
