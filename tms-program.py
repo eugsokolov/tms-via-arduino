@@ -8,9 +8,9 @@ import random
 
 def fire_tms(port):
 #Make inter OS operable
-   port = "/dev/ttyACM1"
+   port = "/dev/ttyACM0"
    print "FIRING TMS"
-   arduino = serial.Serial(port, 9600)
+   arduino = serial.Serial(port, 230400)
    arduino.write('1')
    arduino.close()
 
