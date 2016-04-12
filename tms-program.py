@@ -2,7 +2,8 @@ import serial
 import csv
 import time
 import datetime, os, syslog
-import Image, subprocess
+#import Image
+import subprocess
 import random
 
 def fire_tms(port):
@@ -29,7 +30,7 @@ def process_picture(config, i):
 #   p = subprocess.Popen(["display", image_file])
    if fire is True:
 	time.sleep(float(config['time to fire'])/1000)
-	tms_fire(config['TMS port'])
+	fire_tms(config['TMS port'])
 	remaining = float(int(config['total time']) - int(config['time to fire']))/1000
 	time.sleep(remaining)
    else:
@@ -41,17 +42,18 @@ def process_picture(config, i):
 def determine_fire(fireiter, i):
    if fireiter is 'random':
    	r = random.random()
-   	if r > 0.5: fire = True
-   	else: fire = False
+   	if r > 0.5: return True
+   	else: return False
    else:
-	if i in list(fireiter): fire = True
-	else: fire = False
-   return fire
+	s = [int(j) for j in fireiter[1:-1].split(',')] 
+	if i in s: return True 
+	else: return False
 
 def process_user(config):
    firelist = []
    outlist = []
    for i in range(1, int(config['iterations per user'])+1):
+	print i
    	if config['type'] == 'picture':
    	 fired, out = process_picture(config, i)
    	elif config['type'] == 'word':
