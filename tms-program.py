@@ -3,6 +3,7 @@ import csv
 import random
 import time, datetime
 import os, subprocess, syslog
+import webbrowser
 #import Image
 
 def fire_tms(port):
@@ -25,21 +26,16 @@ def process_picture(config, i):
    if os.path.isdir(config['directory']):
 	path, dirs, files = os.walk(config['directory']).next()
 	r = random.randrange(1,len(files)+1) 
-	image_file = files[r-1] 
+	image_file = path+files[r-1] 
    else: error("Error in configuration \"directory\", input must be valid directory or file")
-
-### DO get image to show
-#image = Image.open(image_file)
-#image.show()
-#time.sleep(float(duration)/1000)
 
    fire = determine_fire(config['fire iteration'], i)
    if config['TMS before or after'] == "before":
 	if fire is True: fire_tms(config['TMS port'])
 	time.sleep(float(config['time to fire'])/1000)
-#	p = subprocess.Popen(["display", image_file])
+	show_image(image_file)
    elif config['TMS before or after'] == "after":
-#	p = subprocess.Popen(["display", image_file])
+	show_image(image_file)
 	time.sleep(float(config['time to fire'])/1000)
 	if fire is True: fire_tms(config['TMS port'])
    else: error("Error in configuration \"TMS before or after\", input must be \"before/after\"")
@@ -52,13 +48,24 @@ def process_picture(config, i):
 
    if config['refresh'] == "yes":
 	print "close image"
-#	p.terminate()
-#	p.kill()
+	webbrowser.close()
    elif config['refresh'] == "no":
 	print "not sure here" 
    else: error("Error in configuration \"refresh\", input must be \"yes/no\"")
 
    return fire, image_file
+
+def show_image(image):
+	if os.path.exists(image): image = image
+	else: error("Error in configuration some image, input must be valid image file\"")
+
+	f = open('display.html', 'w')
+	message = """<html><body><h2>TMS image test</h2><img src="""+image+""" style="width:608px;height:456px;"></body></html> """
+	f.write(message)
+	path = os.getcwd()+"/display.html"
+	webbrowser.open(path)
+	return path
+
 
 def determine_fire(fireiter, i):
    if fireiter is 'random':
@@ -83,13 +90,9 @@ def process_user(config):
    	# fired, out = process_mouse(config, i)
 	else: error("Error in configuration \"type\", input must be \"picture/word/mouse\"")
 
-	if os.path.isexists(config['ISI image']): image_file = config['ISI image']
-	else: error("Error in configuration \"ISI image\", input must be valid image file\"")
-### DO display ISI image
-#	pISI = subprocess.Popen(["display", image_file])
-#	time.sleep(float(config['ISI duration'])/1000)
-#	pISI.terminate()
-#	pISI.kill()
+	show_image(config['ISI image'])
+	time.sleep(float(config['ISI duration'])/1000)
+### CLOSE BROWSER IMAGE	
 
    	if fired is True: firelist.append(i)
 	outlist.append(out)	

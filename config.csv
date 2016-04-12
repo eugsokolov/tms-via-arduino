@@ -10,5 +10,5 @@ time to fire,Integer (ms),300
 event end,keypress/time,time
 event end time,Integer (ms),1000
 refresh,yes/no,yes
-ISI image,File Path,whitescreen.png
+ISI image,File Path,images/whitescreen.png
 ISI duration,Integer (ms),1000
