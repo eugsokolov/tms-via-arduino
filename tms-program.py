@@ -18,7 +18,7 @@ def error(message):
 	exit()
 
 def process_word(config, i):
-###DO probably use generators
+### DO probably use generators
 	return 0
 
 def process_picture(config, i):
@@ -48,7 +48,7 @@ def process_picture(config, i):
 
    if config['refresh'] == "yes":
 	print "close image"
-	webbrowser.close()
+### DO close browser tab
    elif config['refresh'] == "no":
 	print "not sure here" 
    else: error("Error in configuration \"refresh\", input must be \"yes/no\"")
@@ -59,7 +59,7 @@ def show_image(image):
 	if os.path.exists(image): image = image
 	else: error("Error in configuration some image, input must be valid image file\"")
 
-	f = open('display.html', 'w')
+	f = open('test.html', 'w')
 	message = """<html><body><h2>TMS image test</h2><img src="""+image+""" style="width:608px;height:456px;"></body></html> """
 	f.write(message)
 	path = os.getcwd()+"/display.html"
@@ -92,7 +92,7 @@ def process_user(config):
 
 	show_image(config['ISI image'])
 	time.sleep(float(config['ISI duration'])/1000)
-### CLOSE BROWSER IMAGE	
+### DO CLOSE BROWSER IMAGE	
 
    	if fired is True: firelist.append(i)
 	outlist.append(out)	
