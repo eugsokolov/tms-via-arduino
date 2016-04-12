@@ -7,7 +7,8 @@ import random
 
 def fire_tms(port):
 #Make inter OS operable
-   port = "/dev/ttyACM0"
+   port = "/dev/ttyACM1"
+   print "FIRING TMS"
    arduino = serial.Serial(port, 9600)
    arduino.write('1')
    arduino.close()
@@ -19,7 +20,7 @@ def process_word(config, i):
 def process_picture(config, i):
    fire = determine_fire(config['fire iteration'], i)
    path, dirs, files = os.walk(config['directory']).next()
-   r = random.randrang(1,len(files)) 
+   r = random.randrange(1,len(files)) 
    image_file = files[r] 
    #image = Image.open(image_file)
    #image.show()
