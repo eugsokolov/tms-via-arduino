@@ -1,0 +1,41 @@
+<html>
+<head>
+<h3> TMS configuration input </h3>
+</head>
+<body>
+ <form method="post" action="/">
+
+  Number of users? <input type="text" name="users"> <br>
+  Iterations per user? <input type="text" name="iterations"> <br>
+  Event type?
+  <input type="radio" name="type" value="picture" checked> Picture     
+  <input type="radio" name="type" value="word"> Word   
+  <input type="radio" name="type" value="mouse"> Mouse<br>
+  Directory for event input? <input type="text" name="directory"> <br>
+
+  Port TMS is on? <input type="text" name="TMSport"> <br>
+  Fire TMS before or after event?
+  <input type="radio" name="when" value="before" checked> Before  
+  <input type="radio" name="when" value="after"> After<br>
+  Iteration to fire? 
+  <input type="radio" name="when" value="random" checked> Random  
+  <input type="radio" name="when" value="array"> Array<br>
+  Fire iteration array? <input type="text" name="fireIteration"> <br>
+  Time to fire TMS? <input type="text" name="timeToFire"> <br>
+
+  How to end the event?
+  <input type="radio" name="eventEnd" value="keypress" checked> Keypress  
+  <input type="radio" name="eventEnd" value="time"> Time<br>
+  Time to end event? <input type="text" name="eventEndTime"> <br>
+
+  Refresh the event?
+  <input type="radio" name="refresh" value="yes" checked> Yes  
+  <input type="radio" name="refresh" value="no"> No<br>
+  ISI image: <input type="text" name="ISIimage"> <br>
+  ISI duration: <input type="text" name="ISIduration"> <br>
+
+<input type="submit" value="Submit">
+
+</form>
+</body> 
+</html>
