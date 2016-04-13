@@ -1,6 +1,14 @@
 <html>
 <head>
 <h3> TMS configuration input </h3>
+<script>
+function yesnoCheck() {
+    if (document.getElementById('yesCheck').checked) {
+        document.getElementById('ifYes').style.display = 'block';
+    }
+    else document.getElementById('ifYes').style.display = 'none';
+}
+</script>
 </head>
 <body>
  <form method="post" action="/">
@@ -18,15 +26,15 @@
   <input type="radio" name="when" value="before" checked> Before  
   <input type="radio" name="when" value="after"> After<br>
   Iteration to fire? 
-  <input type="radio" name="when" value="random" checked> Random  
-  <input type="radio" name="when" value="array"> Array<br>
-  Fire iteration array? <input type="text" name="fireIteration"> <br>
+  <input type="radio" name="fireIteration" value="random" checked> Random  
+  <input type="radio" name="fireIteration" value="array"> Array<br>
+  Fire iteration array? <input type="text" name="fireArray" style="display:none;"> <br>
   Time to fire TMS? <input type="text" name="timeToFire"> <br>
 
   How to end the event?
   <input type="radio" name="eventEnd" value="keypress" checked> Keypress  
   <input type="radio" name="eventEnd" value="time"> Time<br>
-  Time to end event? <input type="text" name="eventEndTime"> <br>
+  Time to end event? <input type="text" name="eventEndTime" style="display:none;"> <br>
 
   Refresh the event?
   <input type="radio" name="refresh" value="yes" checked> Yes  
