@@ -4,8 +4,11 @@ var formidable = require('formidable');
 var util = require('util');
 var firetms = require('./firetms');
 
-var config = 'config.html'
-var display = 'display.html'
+var config = 'config.html';
+var display = 'display.html';
+var stream = fs.createWriteStream(display);
+var header = "<html><head><h2></h2><style>.double-box{display: inline-block;width: 45%;height: 65%;margin: 5px;}.single-box{display: inline-block;width: 90%;height: 90%;margin: 5px;}</style></head><body>";
+
 
 var server = http.createServer(function (req, res) {
     if (req.method.toLowerCase() == 'get') {
@@ -96,9 +99,14 @@ function processPicture(res, fields){
   for(i = 0; i < fields.iterations; i++){
 
 	// Get random Image from directory
-	imageFile = fields.directory;
+	files = fs.readdirSync(fields.directory);
+	r = Math.floor(Math.random() * files.length + 1);
+	imageFile = fields.directory +"/" + files[r-1];
+	console.log(imageFile);
 	fire = determineFire(fields.fireIteration, i);
-	display = "display.html"
+
+	stream.write(header)	
+	stream.write("<div class=\"single-box\"><img style=\"height:inherit\" src="+imageFile+"/></div></body></html>")
 
 	switch(fields.when){
 	case "before":
