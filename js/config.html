@@ -1,14 +1,6 @@
 <html>
 <head>
 <h3> TMS configuration input </h3>
-<script>
-function yesnoCheck() {
-    if (document.getElementById('yesCheck').checked) {
-        document.getElementById('ifYes').style.display = 'block';
-    }
-    else document.getElementById('ifYes').style.display = 'none';
-}
-</script>
 </head>
 <body>
  <form method="post" action="/">
@@ -54,13 +46,20 @@ function drawPrompts(count) {
     box.innerHTML = ''; // Clear box
     console.log( box )
     for( var i = 0; i < count; i++ )
-        box.innerHTML += '<div class="user" id="user-' + i + '">Subject: <input class="name"></div>';
+        box.innerHTML += '<div class="user" id="user-' + i + '">Subject '+(i+1)+' : <input class="name"></div>';
 }
 
-document.getElementById('users').onkeyup = function(e) {
+document.getElementById('numUsers').onkeyup = function(e) {
    var count = parseInt(e.target.value);
    if( !isNaN(count) && count >= 0 )
        drawPrompts(count);
+}
+
+function yesnoCheck() {
+    if (document.getElementById('yesCheck').checked) {
+        document.getElementById('ifYes').style.display = 'block';
+    }
+    else document.getElementById('ifYes').style.display = 'none';
 }
 </script>
 </body> 

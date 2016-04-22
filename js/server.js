@@ -6,8 +6,7 @@ var firetms = require('./firetms');
 
 var config = 'config.html';
 var display = 'display.html';
-var stream = fs.createWriteStream(display);
-var header = "<html><head><h2></h2><style>.double-box{display: inline-block;width: 45%;height: 65%;margin: 5px;}.single-box{display: inline-block;width: 90%;height: 90%;margin: 5px;}</style></head><body>";
+var header = "<html><head><style>.double-box{display: inline-block;width: 45%;height: 65%;margin: 5px;}.single-box{display: inline-block;width: 90%;height: 90%;margin: 5px;}</style></head><body>";
 
 
 var server = http.createServer(function (req, res) {
@@ -105,8 +104,9 @@ function processPicture(res, fields){
 	console.log(imageFile);
 	fire = determineFire(fields.fireIteration, i);
 
+	var stream = fs.createWriteStream(display, {flags:'w'});
 	stream.write(header)	
-	stream.write("<div class=\"single-box\"><img style=\"height:inherit\" src="+imageFile+"/></div></body></html>")
+	stream.end("<div class=\"single-box\"><img style=\"height:inherit\" src="+imageFile+"/></div></body></html>")
 
 	switch(fields.when){
 	case "before":
