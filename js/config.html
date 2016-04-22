@@ -12,8 +12,11 @@ function yesnoCheck() {
 </head>
 <body>
  <form method="post" action="/">
-
+  <div id="numUsers">
   Number of users? <input type="text" name="users"> <br>
+  </div>
+  <div id="userNames">
+  </div>
   Iterations per user? <input type="text" name="iterations"> <br>
   Event type?
   <input type="radio" name="type" value="picture" checked> Picture     
@@ -45,5 +48,20 @@ function yesnoCheck() {
 <input type="submit" value="Submit">
 
 </form>
+<script>
+function drawPrompts(count) {
+    var box = document.getElementById('userNames');
+    box.innerHTML = ''; // Clear box
+    console.log( box )
+    for( var i = 0; i < count; i++ )
+        box.innerHTML += '<div class="user" id="user-' + i + '">Subject: <input class="name"></div>';
+}
+
+document.getElementById('users').onkeyup = function(e) {
+   var count = parseInt(e.target.value);
+   if( !isNaN(count) && count >= 0 )
+       drawPrompts(count);
+}
+</script>
 </body> 
 </html>
