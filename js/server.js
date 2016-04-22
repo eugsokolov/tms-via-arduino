@@ -55,7 +55,7 @@ function processForm(req, res) {
 
 function logUser(fields, results){
 
-	d = new Date(year, month, day, hours, minutes, seconds);
+	var d = new Date();
 	outputFilename = fields.user + d;
 	myData = results;  
 	//add fields
@@ -92,23 +92,24 @@ function processWord(res, fields){
 function processPicture(res, fields){
 
   var i = 0;
-  var results = {};
+  var results = [];
   for(i = 0; i < fields.iterations; i++){
 
 	// Get random Image from directory
-	imageFile = directory;
+	imageFile = fields.directory;
 	fire = determineFire(fields.fireIteration, i);
+	display = "display.html"
 
-	switch(when){
+	switch(fields.when){
 	case "before":
-		fireTMS(fields.TMSport);
+	//	firetms.open(fields.TMSport);
 		setTimeout(console.log("sleep"), fields.timeToFire);
 		writeResponse(res, display);
 	break;
 	case "after":
 		writeResponse(res, display);
 		setTimeout(console.log("sleep"), fields.timeToFire);
-		fireTMS(fields.TMSport);
+	//	fireTMS(fields.TMSport);
 	
 	break;
 	default:
@@ -117,7 +118,7 @@ function processPicture(res, fields){
 	}
 
 
-	switch(eventEnd){
+	switch(fields.eventEnd){
 	case "keypress":
 			
 	break;
@@ -126,12 +127,12 @@ function processPicture(res, fields){
 		writeResponse(res, display);
 	break;
 	default:
-		console.log("error in when")
-		results = {"ERROR": "when"}
+		console.log("error in eventEnd")
+		results = {"ERROR": "eventEnd"}
 	}
 
 	
-	switch(refresh){
+	switch(fields.refresh){
 	case "yes":
 
 	break;
@@ -139,13 +140,13 @@ function processPicture(res, fields){
 
 	break;
 	default:
-		console.log("error in when")
-		results = {"ERROR": "when"}
+		console.log("error in refresh")
+		results = {"ERROR": "refresh"}
 	
 	}
 
 	newData = 0;	
-	results.push(newData);
+	//results.push(newData);
   }
   return results;
 }
