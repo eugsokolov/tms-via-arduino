@@ -2,12 +2,13 @@ var http = require('http');
 var fs = require('fs');
 var formidable = require('formidable');
 var util = require('util');
+var sleep = require('sleep');
 var firetms = require('./firetms');
 
 var config = 'config.html';
-var display = 'display.html';
-var header = "<html><head><style>.double-box{display: inline-block;width: 45%;height: 65%;margin: 5px;}.single-box{display: inline-block;width: 90%;height: 90%;margin: 5px;}</style></head><body>";
 
+/* Server setup
+*/
 
 var server = http.createServer(function (req, res) {
     if (req.method.toLowerCase() == 'get') {
@@ -28,15 +29,13 @@ function displayForm(res) {
     });
 }
 
-function writeResponse(res, file){
+function writeResponse(res, data){
         res.writeHead(200, {
-            'content-type': 'text/html'
+            'content-type': 'text/html',
+		'Content-Length': data.length
         });
-	var reply = fs.createReadStream(file);
-	reply.pipe(res);
-	reply.on("end", function(){
-		// Done
-	});
+        res.write(data);
+        res.end();
 }
 
 /* Data Processing 
@@ -45,34 +44,33 @@ function writeResponse(res, file){
 function processForm(req, res) {
     var form = new formidable.IncomingForm();
     form.parse(req, function (err, fields) {
-	// Print form data
-	console.log(fields);
-	var i = 0;
-	for(i = 0; i < fields.users; i++){
-		results = processUser(res, fields);
-		logUser(fields, results);
+	console.log(fields); // Print form data
+	for(var i = 0; i < fields.users; i++){
+		var name = fields.names[i];
+		var results = processUser(res, fields);
+		logUser(fields, results, name);
+//TODO why is console.log printing all JSON saved to xxx at very end?
 	}
     });
 }
 
-function logUser(fields, results){
+function logUser(fields, results, name){
 
-	var d = new Date();
-	outputFilename = fields.user + d;
-	myData = results;  
-	//add fields
-	fs.writeFile(outputFilename, JSON.stringify(myData, null, 4), function(err) {
+	var date = new Date()
+	var outputFilename = name +'-'+ date;
+	var myData = date + "\n" + name + "\n\n" + JSON.stringify(results, null, 4);  
+	fs.writeFile(outputFilename, myData, function(err) {
 	    if(err) {
 	      console.log(err);
 	    } else {
-	      console.log("JSON saved to " + outputFilename);
+	      console.log("file saved " + outputFilename);
 	    }
 	}); 
 }
 
 function processUser(res, fields){
 
-  var results = {};
+  results = {};
   switch(fields.type){
 	case "picture":
 	results = processPicture(res, fields);
@@ -80,6 +78,8 @@ function processUser(res, fields){
 	case "word":
 	results = processWord(res, fields);
 	break;
+	case"mouse":
+	results = processMouse(res, fields);
 	default:
 	console.log("error in type")
 	results = {"ERROR": "type"}
@@ -88,36 +88,40 @@ function processUser(res, fields){
 }
 
 function processWord(res, fields){
-
+//TODO create html for words
+}
+function processMouse(res, fields){
+//TODO create html for mouse
 }
 
 function processPicture(res, fields){
 
-  var i = 0;
-  var results = [];
-  for(i = 0; i < fields.iterations; i++){
+  results = [];
+  results.push(fields);
+  for(var i = 0; i < fields.iterations; i++){
 
-	// Get random Image from directory
-	files = fs.readdirSync(fields.directory);
-	r = Math.floor(Math.random() * files.length + 1);
-	imageFile = fields.directory +"/" + files[r-1];
-	console.log(imageFile);
-	fire = determineFire(fields.fireIteration, i);
+	imageFile = getImage(fields.directory);
+	results.push(imageFile);
 
-	var stream = fs.createWriteStream(display, {flags:'w'});
-	stream.write(header)	
-	stream.end("<div class=\"single-box\"><img style=\"height:inherit\" src="+imageFile+"/></div></body></html>")
+	fire = determineFire(fields.fireIteration, i, fields.fireArray);
+	results.push(fire);
 
+	var out = makeImageHTML(imageFile, fields.singleDouble);
+
+//TODO fix sleep function
+//TODO fix writeResponse bug
 	switch(fields.when){
 	case "before":
-	//	firetms.open(fields.TMSport);
-		setTimeout(console.log("sleep"), fields.timeToFire);
-		writeResponse(res, display);
+	//	if(fire == true) firetms.open(fields.TMSport);
+	//	setTimeout(console.log("sleep"), fields.timeToFire);
+		sleep.sleep(fields.timeToFire/1000);
+		writeResponse(res, out);
 	break;
 	case "after":
-		writeResponse(res, display);
-		setTimeout(console.log("sleep"), fields.timeToFire);
-	//	fireTMS(fields.TMSport);
+		writeResponse(res, out);
+		sleep.sleep(fields.timeToFire/1000);
+	//	setTimeout(console.log("sleep"), fields.timeToFire);
+	//	if(fire == true) firetms.open(fields.TMSport);
 	
 	break;
 	default:
@@ -126,20 +130,22 @@ function processPicture(res, fields){
 	}
 
 
+//TODO fix eventEnd as necessary	
 	switch(fields.eventEnd){
 	case "keypress":
 			
 	break;
 	case "time":
-		setTimeout(console.log("sleep"), fields.eventEndTime);
-		writeResponse(res, display);
+		sleep.sleep(fields.eventEndTime/1000);
+		writeResponse(res, out);
 	break;
 	default:
 		console.log("error in eventEnd")
 		results = {"ERROR": "eventEnd"}
 	}
 
-	
+
+//TODO fix refresh as necessary	
 	switch(fields.refresh){
 	case "yes":
 
@@ -152,30 +158,47 @@ function processPicture(res, fields){
 		results = {"ERROR": "refresh"}
 	
 	}
-
-	newData = 0;	
-	//results.push(newData);
   }
+
+//TODO add ISI image where necessary
+
   return results;
 }
 
+function makeImageHTML(imageFile, type){
 
-function determineFire(fireiter, i){
+	var out = "<html><head><style>.double-box{display: inline-block;width: 45%;height: 65%;margin: 5px;}.single-box{display: inline-block;width: 90%;height: 90%;margin: 5px;}</style></head><body>";
 
-/*
+	if(type == 'single') out += "<div class=\"single-box\"><img style=\"height:inherit\" src=\""+imageFile+"\"/></div></body></html>";
+	else if(type == 'double') out +="<div style=\"text-align:center;\"><div class=\"double-box\"><img style=\"height:inherit;width:fill;\" src=\""+imageFile+"\" /></div><div class=\"double-box\"><img style=\"height:inherit;width:fill;\" src=\""+imageFile+"\" /></div></div></body></html>";
+	else out += "<p> ERROR in single or double image HTML type </p></body></html>"
+	return out;
+}
+
+function getImage(directory){
+
+	files = fs.readdirSync(directory);
+	r = Math.floor(Math.random() * files.length + 1);
+	var imageFile = directory +"/" + files[r-1];
+	console.log(imageFile);
+	return imageFile
+}
+
+function determineFire(fireiter, i, fireArray){
+
    if (fireiter == 'random'){
         r = Math.random();
         if (r > 0.5) return true;
         else return false;
    }
-   else if (type(fireiter) is list){
-        if (i in fireiter: return true;
-        else: return false;
+   else if (fireiter = 'array'){
+	for(var j = 1; j < fireArray.length; j++)
+        	if(i == j) return true;
+        return false;
    }
    else{
 	console.log("Error in configuration \"fire iteration\", input must integer array or \"random\"");
    }
-*/
 	return true;
 }
 
