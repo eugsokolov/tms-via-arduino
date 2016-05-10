@@ -12,8 +12,12 @@
   Iterations per user? <input type="text" name="iterations"> <br>
   Event type?
   <input type="radio" name="type" value="picture" checked> Picture     
-  <input type="radio" name="type" value="word"> Word   
-  <input type="radio" name="type" value="mouse"> Mouse<br>
+  <input type="radio" name="type" value="word"> Word   <br>
+  Single or Double?
+  <input type="radio" name="singleDouble" value="single" checked> Single     
+  <input type="radio" name="singleDouble" value="double"> Double   
+<!--  <input type="radio" name="type" value="mouse"> Mouse
+  --><br>
   Directory for event input? <input type="text" name="directory"> <br>
 
   Port TMS is on? <input type="text" name="TMSport"> <br>
@@ -27,9 +31,9 @@
   Time to fire TMS? <input type="text" name="timeToFire"> <br>
 
   How to end the event?
-  <input type="radio" name="eventEnd" value="keypress" checked> Keypress  
-  <input type="radio" name="eventEnd" value="time"> Time<br>
-  Time to end event? <input type="text" name="eventEndTime" style="display:none;"> <br>
+  <input id="keypress" type="radio" name="eventEnd" value="keypress" checked> Keypress  
+  <input id="time" type="radio" name="eventEnd" value="time"> Time<br>
+  Time to end event? <input id="eventEndTime" type="text" name="eventEndTime"> <br>
 
   Refresh the event?
   <input type="radio" name="refresh" value="yes" checked> Yes  
@@ -43,10 +47,10 @@
 <script>
 function drawPrompts(count) {
     var box = document.getElementById('userNames');
-    box.innerHTML = ''; // Clear box
+    box.innerHTML = '';
     console.log( box )
     for( var i = 0; i < count; i++ )
-        box.innerHTML += '<div class="user" id="user-' + i + '">Subject '+(i+1)+' : <input class="name"></div>';
+        box.innerHTML += '<div class="user" id="user-' + i + '">Subject '+(i+1)+' : <input class="name" name="names"></div>';
 }
 
 document.getElementById('numUsers').onkeyup = function(e) {
@@ -55,12 +59,15 @@ document.getElementById('numUsers').onkeyup = function(e) {
        drawPrompts(count);
 }
 
-function yesnoCheck() {
-    if (document.getElementById('yesCheck').checked) {
-        document.getElementById('ifYes').style.display = 'block';
-    }
-    else document.getElementById('ifYes').style.display = 'none';
+//TODO fix radio button JS
+//eventEnd and fireIteration
+
+document.getElementById('keypress').checked = function(e){
+	console.log(e.value);
+        document.getElementById('eventEndTime').style.display = 'none';
+        //document.getElementById('eventEndTime').style.display = 'block';
 }
+
 </script>
 </body> 
 </html>
