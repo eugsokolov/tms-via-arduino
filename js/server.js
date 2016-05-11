@@ -88,7 +88,32 @@ function processUser(res, fields){
 }
 
 function processWord(res, fields){
-//TODO create html for words
+//TODO fix
+
+  results = [];
+  results.push(fields);
+  for(var i = 0; i < fields.iterations; i++){
+
+	fs.readFile('./'+fields.directory, function(err, data){
+		if(err) throw err
+
+		console.log(data)
+		r = Math.floor(Math.random() * data.length + 1);
+		word = 'test';
+		results.push(word);
+
+	}); 
+
+	fire = determineFire(fields.fireIteration, i, fields.fireArray);
+	results.push(fire);
+
+	var out = makeWordHTML(word, fields.singleDouble);
+
+	writeResponse(res, out);
+
+  }
+  return results;
+  
 }
 function processMouse(res, fields){
 //TODO create html for mouse
@@ -163,6 +188,16 @@ function processPicture(res, fields){
 //TODO add ISI image where necessary
 
   return results;
+}
+
+function makeWordHTML(word, type){
+
+	var out = "<html><head><style>.double-box{display: inline-block;width: 45%;height: 65%;margin: 5px;}.single-box{display: inline-block;width: 90%;height: 90%;margin: 5px;}</style></head><body>";
+
+	if(type == 'single') out += "<div class=\"single-box\"> <p>"+word+"\"/></div></body></html>";
+	else if(type == 'double') out +="<div style=\"text-align:center;\"><div class=\"double-box\"><p>"+word+"\" /></div><div class=\"double-box\"><p>"+word+"\" /></div></div></body></html>";
+	else out += "<p> ERROR in single or double image HTML type </p></body></html>"
+	return out;
 }
 
 function makeImageHTML(imageFile, type){
