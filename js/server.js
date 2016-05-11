@@ -14,7 +14,10 @@ var server = http.createServer(function (req, res) {
     if (req.method.toLowerCase() == 'get') {
         displayForm(res);
     } else if (req.method.toLowerCase() == 'post') {
-        processForm(req, res);
+//	socket write
+	var ID = 2;
+	var html = '<html><body><script>socket.emit( 'connected', ' + ID + ' ); socket.on...';
+ //       processForm(req, res);
     }
 });
 
