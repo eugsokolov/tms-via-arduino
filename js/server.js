@@ -1,9 +1,10 @@
-var http = require('http');
 var fs = require('fs');
 var formidable = require('formidable');
 var util = require('util');
 var sleep = require('sleep');
 var firetms = require('./firetms');
+var http = require('http')
+var io = require('socket.io')(server);
 
 var config = 'config.html';
 
@@ -14,10 +15,13 @@ var server = http.createServer(function (req, res) {
     if (req.method.toLowerCase() == 'get') {
         displayForm(res);
     } else if (req.method.toLowerCase() == 'post') {
-//	socket write
-	var ID = 2;
-	var html = '<html><body><script>socket.emit( 'connected', ' + ID + ' ); socket.on...';
- //       processForm(req, res);
+        processForm(req, res);
+
+        res.writeHead(200, {
+            'content-type': 'text/html',
+        });
+        res.write(tmp);
+        res.end();
     }
 });
 
@@ -30,15 +34,6 @@ function displayForm(res) {
         res.write(data);
         res.end();
     });
-}
-
-function writeResponse(res, data){
-        res.writeHead(200, {
-            'content-type': 'text/html',
-		'Content-Length': data.length
-        });
-        res.write(data);
-        res.end();
 }
 
 /* Data Processing 
@@ -110,10 +105,7 @@ function processWord(res, fields){
 	fire = determineFire(fields.fireIteration, i, fields.fireArray);
 	results.push(fire);
 
-	var out = makeWordHTML(word, fields.singleDouble);
-
-	writeResponse(res, out);
-
+	emitSocket(word, 'word');
   }
   return results;
   
@@ -134,19 +126,15 @@ function processPicture(res, fields){
 	fire = determineFire(fields.fireIteration, i, fields.fireArray);
 	results.push(fire);
 
-	var out = makeImageHTML(imageFile, fields.singleDouble);
-
-//TODO fix sleep function
-//TODO fix writeResponse bug
 	switch(fields.when){
 	case "before":
 	//	if(fire == true) firetms.open(fields.TMSport);
 	//	setTimeout(console.log("sleep"), fields.timeToFire);
 		sleep.sleep(fields.timeToFire/1000);
-		writeResponse(res, out);
+		emitSocket(imageFile, 'picture');
 	break;
 	case "after":
-		writeResponse(res, out);
+		emitSocket(imageFile, 'picture');
 		sleep.sleep(fields.timeToFire/1000);
 	//	setTimeout(console.log("sleep"), fields.timeToFire);
 	//	if(fire == true) firetms.open(fields.TMSport);
@@ -165,7 +153,6 @@ function processPicture(res, fields){
 	break;
 	case "time":
 		sleep.sleep(fields.eventEndTime/1000);
-		writeResponse(res, out);
 	break;
 	default:
 		console.log("error in eventEnd")
@@ -191,6 +178,23 @@ function processPicture(res, fields){
 //TODO add ISI image where necessary
 
   return results;
+}
+
+function emitSocket(thing, type){
+	
+	if(type == 'word'){
+
+	}
+	else if(type == 'picture'){
+
+io.on('connection', function(socket){
+  socket.on('update', function(thing){
+    io.emit('update', thing);
+  });
+});
+	}
+
+
 }
 
 function makeWordHTML(word, type){
@@ -240,5 +244,6 @@ function determineFire(fireiter, i, fireArray){
 	return true;
 }
 
-server.listen(8080);
+server.listen(8080, function() {
 console.log("server listening on localhost 8080");
+});
