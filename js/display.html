@@ -1,9 +1,8 @@
 <html><head><style>.double-box{display: inline-block;width: 45%;height: 65%;margin: 5px;}.single-box{display: inline-block;width: 90%;height: 90%;margin: 5px;}</style></head><body><div class="single-box"><img id="image" style="height:inherit" src=../images/lionandcub.jpg/></div>
 <script>
-socket.emit( 'connected' , 191 );
+var socket = io();
 socket.on( 'update', function( data ) {
 	document.getElementById( 'image' ).src = data;
 });
-
 </script>
 </body></html>
