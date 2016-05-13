@@ -3,37 +3,91 @@ var formidable = require('formidable');
 var util = require('util');
 var sleep = require('sleep');
 var firetms = require('./firetms');
-var http = require('http')
-var io = require('socket.io')(server);
-
+var app = require('express')();
+var http = require('http');
+var io = require('socket.io');
 var config = 'config.html';
+var display = 'display.html';
 
 /* Server setup
 */
+// io.on('connection', function(socket){
+//   console.log('a user connected');
+// });
 
+var socketServer = http.createServer( app );
 var server = http.createServer(function (req, res) {
-    if (req.method.toLowerCase() == 'get') {
-        displayForm(res);
-    } else if (req.method.toLowerCase() == 'post') {
-        processForm(req, res);
+    var url = req.url;
+    console.log( url );
 
-        res.writeHead(200, {
+    if( url == '/' ) {
+        if (req.method.toLowerCase() == 'get') {
+            displayForm(res);
+        } else if (req.method.toLowerCase() == 'post') {
+            processForm(req, res);
+            displayTest(res, 5);
+        }
+    } else if ( url && ( url.match( /.*\.png$/ ) || url.match( /.*\.jpg$/ ) ) ) {
+        displayImage( url.substring( 1, url.length ), res ); // Remove leading "/"
+    } else {
+        res.writeHead(404, {
             'content-type': 'text/html',
         });
-        res.write(tmp);
+        res.write('404: Page not found');
         res.end();
     }
 });
+
+
+function displayImage(img,res) {
+    fs.readFile(img, function (err, data) {
+        if( err ) {
+            res.writeHead(404, {
+                'content-type': 'text/html',
+            });
+            res.write('404: Page not found');
+            res.end();
+        } else {
+            var type = img.substring( img.length-3, img.length );
+            res.writeHead(200, {'Content-Type': 'image/' + type });
+            res.write(data);
+            res.end();
+        }
+    });
+}
 
 function displayForm(res) {
     fs.readFile(config, function (err, data) {
         res.writeHead(200, {
             'Content-Type': 'text/html',
-                'Content-Length': data.length
+            'Content-Length': data.length
         });
         res.write(data);
         res.end();
     });
+}
+
+function displayTest(res, ID) {
+    fs.readFile(display, 'utf8', function (err, data) {
+        data = data.replace( '{{config}}', "var config = { id: " + ID + " };" );
+        res.writeHead(200, {
+            'Content-Type': 'text/html',
+            'Content-Length': data.length,
+            'Access-Control-Allow-Origin': '*'
+        });
+        res.write(data);
+        res.end();
+    });
+    startTest( ID );
+}
+
+// Just demoing
+function startTest( ID ) {
+    var flag = true;
+    setInterval( function() {
+        var image = flag ? 'images/lionandcub.jpg' : 'images/whitescreen.png';
+        flag = flag ? false : true;
+    }, 1000 );
 }
 
 /* Data Processing 
@@ -246,4 +300,7 @@ function determineFire(fireiter, i, fireArray){
 
 server.listen(8080, function() {
 console.log("server listening on localhost 8080");
+});
+socketServer.listen(3000, function() {
+    console.log("server listening on localhost 8080");
 });

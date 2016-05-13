@@ -1,8 +1,19 @@
-<html><head><style>.double-box{display: inline-block;width: 45%;height: 65%;margin: 5px;}.single-box{display: inline-block;width: 90%;height: 90%;margin: 5px;}</style></head><body><div class="single-box"><img id="image" style="height:inherit" src=../images/lionandcub.jpg/></div>
-<script>
-var socket = io();
-socket.on( 'update', function( data ) {
-	document.getElementById( 'image' ).src = data;
-});
-</script>
-</body></html>
+<html>
+    <head>
+        <script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
+        <style>.double-box{display: inline-block;width: 45%;height: 65%;margin: 5px;}.single-box{display: inline-block;width: 90%;height: 90%;margin: 5px;}</style>
+    </head>
+    <body>
+        <div class="single-box">
+            <img id="image" style="height:inherit" src="../images/lionandcub.jpg">
+        </div>
+        <script>
+            {{config}}
+            var socket = io.connect('http://159.203.70.79:3000');
+            socket.on( 'update', function( data ) {
+                if( data.destID == config.id )
+                    document.getElementById( 'image' ).src = data.image;
+            });
+        </script>
+    </body>
+</html>
