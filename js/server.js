@@ -3,7 +3,6 @@ var formidable = require('formidable');
 var util = require('util');
 var sleep = require('sleep');
 var firetms = require('./firetms');
-var app = require('express')();
 var http = require('http');
 var io = require('socket.io');
 var config = 'config.html';
@@ -12,7 +11,6 @@ var display = 'display.html';
 /* Server setup
 */
 
-var socketServer = http.createServer( app );
 var server = http.createServer(function (req, res) {
     var url = req.url;
     console.log( url );
