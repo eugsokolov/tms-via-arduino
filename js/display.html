@@ -1,6 +1,5 @@
 <html>
     <head>
-        <script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
         <style>.double-box{display: inline-block;width: 45%;height: 65%;margin: 5px;}.single-box{display: inline-block;width: 90%;height: 90%;margin: 5px;}</style>
     </head>
     <body>
@@ -9,11 +8,7 @@
         </div>
         <script>
             {{config}}
-            var socket = io.connect('http://159.203.70.79:3000');
-            socket.on( 'update', function( data ) {
-                if( data.destID == config.id )
-                    document.getElementById( 'image' ).src = data.image;
-            });
+            startTest();
         </script>
     </body>
 </html>

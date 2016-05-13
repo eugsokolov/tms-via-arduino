@@ -11,9 +11,6 @@ var display = 'display.html';
 
 /* Server setup
 */
-// io.on('connection', function(socket){
-//   console.log('a user connected');
-// });
 
 var socketServer = http.createServer( app );
 var server = http.createServer(function (req, res) {
@@ -25,7 +22,7 @@ var server = http.createServer(function (req, res) {
             displayForm(res);
         } else if (req.method.toLowerCase() == 'post') {
             processForm(req, res);
-            displayTest(res, 5);
+            displayTest(res);
         }
     } else if ( url && ( url.match( /.*\.png$/ ) || url.match( /.*\.jpg$/ ) ) ) {
         displayImage( url.substring( 1, url.length ), res ); // Remove leading "/"
@@ -67,9 +64,9 @@ function displayForm(res) {
     });
 }
 
-function displayTest(res, ID) {
+function displayTest(res) {
     fs.readFile(display, 'utf8', function (err, data) {
-        data = data.replace( '{{config}}', "var config = { id: " + ID + " };" );
+        data = data.replace( '{{config}}', 'var config = { frequency: 5 };' + startTest.toString() ); // Put function into html file
         res.writeHead(200, {
             'Content-Type': 'text/html',
             'Content-Length': data.length,
@@ -78,15 +75,18 @@ function displayTest(res, ID) {
         res.write(data);
         res.end();
     });
-    startTest( ID );
 }
 
-// Just demoing
-function startTest( ID ) {
+// Just demoing, this is where you put the stuff you want to run
+function startTest() {
     var flag = true;
-    setInterval( function() {
+    var counter = 0;
+    var interval = setInterval( function() {
+        if( counter++ > config.frequency ) // Config defined in the replace statement
+            clearInterval( interval );
         var image = flag ? 'images/lionandcub.jpg' : 'images/whitescreen.png';
         flag = flag ? false : true;
+        document.getElementById( 'image' ).src = image;
     }, 1000 );
 }
 
@@ -300,7 +300,4 @@ function determineFire(fireiter, i, fireArray){
 
 server.listen(8080, function() {
 console.log("server listening on localhost 8080");
-});
-socketServer.listen(3000, function() {
-    console.log("server listening on localhost 8080");
 });
