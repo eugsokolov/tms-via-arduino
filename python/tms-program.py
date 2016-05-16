@@ -1,10 +1,44 @@
+
+"""
+Socket setup
+"""
+from flask import Flask, render_template
+from flask.socketio import SocketIO, emit
+
+app = Flask(__name__)
+app.config['SECRET_KEY'] = 'secret!'
+socketio = SocketIO(app)
+
+@app.route('/')
+def index():
+    return render_template('display.html')
+
+if __name__ == '__main__':
+    socketio.run(app)
+
+@socketio.on('connect')
+def test_connect():
+	start()
+
+@socketio.on('update')
+def show_image(obj, screen, typeOut):
+	emit('update', (typeOut, screen, obj))
+	print obj, screen, typeOut
+
+@socketio.on('disconnect')
+def test_disconnect():
+    print('Client disconnected')
+
+"""
+Logic process
+"""
 import serial
 import csv
 import random
 import time, datetime
 import os, subprocess, syslog
-import webbrowser
-#import Image
+
+objList = []
 
 def error(message):
 	print message
@@ -29,32 +63,45 @@ def determine_fire(fireiter, i):
 	else: return False
    else: error("Error in configuration \"fire iteration\", input must integer array or \"random\"")
 
-def get_word(fileName):
-    words = list()
-    with open(fileName, 'r') as f:
-     for line in f:
-	words.append(line.rsplit())
+def processFiles(typeIn, directory):
+    global objList
+    if os.path.isfile(directory) and typeIn == 'word':
+	words = list()
+	with open(directory, 'r') as f:
+	 for line in f:
+	   cand = line.rsplit()[0]
+	   if type(cand) != str : error("Error in word list file")
+   	   words.append(cand)
+    	objList = words
 
-    r = random.randrange(1,len(words)+1) 
-    word = words[r]
+    elif os.path.isdir(directory) and typeIn == 'picture':
+	fileNames = list()
+	path, dirs, files = os.walk(directory).next()
+	for f in files:
+		fileNames.append(path+"/"+f)
+	objList = fileNames
+
+def get_word():
+    r = random.randrange(1,len(objList)) 
+    word = objList[r]
     yield word
 
-def get_image(directory):
-	path, dirs, files = os.walk(directory).next()
-	r = random.randrange(1,len(files)+1) 
-	image_file = path+files[r-1]
-	yield image_file
+def get_image():
+    r = random.randrange(1,len(objList)+1) 
+    image_file = objList[r-1]
+    yield image_file
 
 def process_type(config, i):
    # Get random Image or Word to show from directory given
    directory = config['directory']
    typeOut = config['type']
-   if os.path.isdir(directory) and (typeOut == 'picture'):
-	out = get_image(directory).next()
-   elif os.path.isfile(directory) and (typeOut == 'word'):
-	out = get_word(directory).next()	
+   if typeOut == 'picture':
+	out = get_image().next()
+   elif typeOut == 'word':
+	out = get_word().next()	
    else: error("Error in configuration \"directory\", input must be valid directory or file")
 
+   #Process Image/Word with firing TMS
    screen = config['screen']
    fire = determine_fire(config['fire iteration'], i)
    if config['TMS before or after'] == "before":
@@ -75,41 +122,12 @@ def process_type(config, i):
 
 #TODO refresh
    if config['refresh'] == "yes":
-	print "close image"
+	pass
    elif config['refresh'] == "no":
-	print "not sure here" 
+	pass 
    else: error("Error in configuration \"refresh\", input must be \"yes/no\"")
 
    return fire, out
-
-def show_image(obj, screen, typeOut):
-#TODO close browser tab
-   f = open('test.html', 'w')
-   out = '<html><head><h2></h2><style>.double-box {    display: inline-block;width: 45%;height: 65%;margin: 5px;}.single-box { display: inline-block;width: 90%;height: 90%; margin: 5px;}</style></head><body>'
-
-   if typeOut == 'picture':
-	if os.path.exists(obj): image = obj
-	else: error("Error in configuration some image, input must be valid image file\"")
-
-	if screen == 'single': out += '<div class="single-box"> <img style="height:inherit" src="'+image+'"  /></div></body></html> '
-	elif screen == 'double': out +='<div style="text-align:center;"><div class="double-box"><img style="height:inherit;width:fill;" src="'+image+'"  /></div><div class="double-box"><img style="height:inherit;width:fill;" src="'+image+'"  /></div></div></body></html>'
-	else: error("Error in configuration \"screen\", input must be single or double")
-
-   elif typeOut == 'word':
-	if type(obj[0]) is str: word = obj[0]
-	else: error("Possible invalid input word?")
-
-	if screen == 'single': out += '<div class="single-box"><center><h1>'+word+'</h1></div></body></html> '
-	elif screen == 'double': out +='<div style="text-align:center;"><div class="double-box"><center><h1>'+word+'</h1></div><div class="double-box"><center><h1>'+word+'</h1></div></div></body></html>'
-	else: error("Error in configuration \"screen\", input must be single or double")
-
-   else: error("Error in configuration \"type\", input must be word or picture")
-
-
-   f.write(out)
-   path = os.getcwd()+"/test.html"
-   webbrowser.open(path, new=0)
-   return path
 
 def process_user(config):
    firelist = []
@@ -122,13 +140,15 @@ def process_user(config):
    	 error("mouse not yet implemented")
 	else: error("Error in configuration \"type\", input must be \"picture/word/mouse\"")
 
+#TODO when to fire ISI?
 	show_image(config['ISI image'], config['screen'], 'picture')
 	time.sleep(float(config['ISI duration'])/1000)	
 
    	if fired is True: firelist.append(i)
 	outlist.append(out)	
 
-   #show_image('blank')
+#TODO show blank image at the end
+   #show_image(blank, config['screen'], 'picture')
 
    config['fire iteration'] = firelist
    config['order list'] = outlist
@@ -142,6 +162,7 @@ def process_config(filename):
    		k, x, v = row
    		config[k] = v
 
+   processFiles(config['type'], config['directory'])
    # Some error checking and cleaning of the config file
    config.pop('Name')
    if config['fire iteration'] != "random":
@@ -167,10 +188,10 @@ def log_user_data(info, filename):
 	   f.write(str(k) + ',' + str(v) + '\n')
    f.close()
 
-def main():
+def start():
    config = process_config("config.csv")
    f = input_user_data(config['name'], config['sex'])
    info = process_user(config)
    log_user_data(info, f)
 
-main()
+start()
