@@ -11,6 +11,8 @@ def error(message):
 	exit()
 
 def fire_tms(port):
+# To find pinout of BNC cable: 
+#http://www.electronics2000.co.uk/pin-out/rfconns.php
 	port = "/dev/ttyACM0"
 	print "FIRING TMS : ", port
 	#arduino = serial.Serial(port, 230400)
@@ -33,24 +35,24 @@ def get_word(fileName):
      for line in f:
 	words.append(line.rsplit())
 
-    r = random.randrange(1,len(d)+1) 
+    r = random.randrange(1,len(words)+1) 
     word = words[r]
-    return word
+    yield word
 
 def get_image(directory):
 	path, dirs, files = os.walk(directory).next()
 	r = random.randrange(1,len(files)+1) 
 	image_file = path+files[r-1]
-	return  image_file
+	yield image_file
 
 def process_type(config, i):
    # Get random Image or Word to show from directory given
    directory = config['directory']
    typeOut = config['type']
-   if os.path.isdir(directory) && (typeOut == 'picture'):
-	out = get_image(directory)
-   elif os.path.isfile(directory) && (typeOut == 'word'):
-	out = get_word(directory)	
+   if os.path.isdir(directory) and (typeOut == 'picture'):
+	out = get_image(directory).next()
+   elif os.path.isfile(directory) and (typeOut == 'word'):
+	out = get_word(directory).next()	
    else: error("Error in configuration \"directory\", input must be valid directory or file")
 
    screen = config['screen']
@@ -78,29 +80,43 @@ def process_type(config, i):
 	print "not sure here" 
    else: error("Error in configuration \"refresh\", input must be \"yes/no\"")
 
-   return fire, image_file
+   return fire, out
 
-def show_image(image, screen, typeOut):
+def show_image(obj, screen, typeOut):
 #TODO close browser tab
-	if os.path.exists(image): image = image
+   f = open('test.html', 'w')
+   out = '<html><head><h2></h2><style>.double-box {    display: inline-block;width: 45%;height: 65%;margin: 5px;}.single-box { display: inline-block;width: 90%;height: 90%; margin: 5px;}</style></head><body>'
+
+   if typeOut == 'picture':
+	if os.path.exists(obj): image = obj
 	else: error("Error in configuration some image, input must be valid image file\"")
 
-	f = open('test.html', 'w')
-	if(screen == 'single'): message = '<html><head><h2></h2><style>.single-box { display: inline-block;width: 90%;height: 90%; margin: 5px;}</style></head><body><div class="single-box"><img style="height:inherit" src="'+image+'"  /></div></body></html> '
-	elif(screen == 'double'): message ='<html><head><h2></h2><style>.double-box {    display: inline-block;width: 45%;height: 65%;margin: 5px;}</style></head><body><div style="text-align:center;"><div class="double-box"><img style="height:inherit;width:fill;" src="'+image+'"  /></div><div class="double-box"><img style="height:inherit;width:fill;" src="'+image+'"  /></div></div></body></html>'
-
+	if screen == 'single': out += '<div class="single-box"> <img style="height:inherit" src="'+image+'"  /></div></body></html> '
+	elif screen == 'double': out +='<div style="text-align:center;"><div class="double-box"><img style="height:inherit;width:fill;" src="'+image+'"  /></div><div class="double-box"><img style="height:inherit;width:fill;" src="'+image+'"  /></div></div></body></html>'
 	else: error("Error in configuration \"screen\", input must be single or double")
-	f.write(message)
-	path = os.getcwd()+"/test.html"
-	webbrowser.open(path, new=0)
-	return path
+
+   elif typeOut == 'word':
+	if type(obj[0]) is str: word = obj[0]
+	else: error("Possible invalid input word?")
+
+	if screen == 'single': out += '<div class="single-box"><center><h1>'+word+'</h1></div></body></html> '
+	elif screen == 'double': out +='<div style="text-align:center;"><div class="double-box"><center><h1>'+word+'</h1></div><div class="double-box"><center><h1>'+word+'</h1></div></div></body></html>'
+	else: error("Error in configuration \"screen\", input must be single or double")
+
+   else: error("Error in configuration \"type\", input must be word or picture")
+
+
+   f.write(out)
+   path = os.getcwd()+"/test.html"
+   webbrowser.open(path, new=0)
+   return path
 
 def process_user(config):
    firelist = []
    outlist = []
    for i in range(1, int(config['iterations per user'])+1):
 	print i
-   	if (config['type'] == 'picture') || (config['type'] == 'word'):
+   	if (config['type'] == 'picture') or (config['type'] == 'word'):
    	 fired, out = process_type(config, i)
    	elif (config['type'] == 'mouse'):
    	 error("mouse not yet implemented")
