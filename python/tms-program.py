@@ -3,7 +3,7 @@
 Socket setup
 """
 from flask import Flask, render_template
-from flask.socketio import SocketIO, emit
+from flask_socketio import SocketIO, emit
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
@@ -63,47 +63,19 @@ def determine_fire(fireiter, i):
 	else: return False
    else: error("Error in configuration \"fire iteration\", input must integer array or \"random\"")
 
-def processFiles(typeIn, directory):
-    global objList
-    if os.path.isfile(directory) and typeIn == 'word':
-	words = list()
-	with open(directory, 'r') as f:
-	 for line in f:
-	   cand = line.rsplit()[0]
-	   if type(cand) != str : error("Error in word list file")
-   	   words.append(cand)
-    	objList = words
-
-    elif os.path.isdir(directory) and typeIn == 'picture':
-	fileNames = list()
-	path, dirs, files = os.walk(directory).next()
-	for f in files:
-		fileNames.append(path+"/"+f)
-	objList = fileNames
-
-def get_word():
-    r = random.randrange(1,len(objList)) 
-    word = objList[r]
-    yield word
-
-def get_image():
-    r = random.randrange(1,len(objList)+1) 
-    image_file = objList[r-1]
-    yield image_file
+def get_next():
+    r = random.randrange(0,len(objList)) 
+    out = objList[r]
+    yield out
 
 def process_type(config, i):
    # Get random Image or Word to show from directory given
-   directory = config['directory']
+   out = get_next().next()
    typeOut = config['type']
-   if typeOut == 'picture':
-	out = get_image().next()
-   elif typeOut == 'word':
-	out = get_word().next()	
-   else: error("Error in configuration \"directory\", input must be valid directory or file")
-
-   #Process Image/Word with firing TMS
    screen = config['screen']
    fire = determine_fire(config['fire iteration'], i)
+
+   #Process Image/Word with firing TMS
    if config['TMS before or after'] == "before":
 	if fire is True: fire_tms(config['TMS port'])
 	time.sleep(float(config['time to fire'])/1000)
@@ -114,13 +86,15 @@ def process_type(config, i):
 	if fire is True: fire_tms(config['TMS port'])
    else: error("Error in configuration \"TMS before or after\", input must be \"before/after\"")
 
+   #Process how to end event
    if config['event end'] == "keypress":
 	raw_input("waiting for keypress to end...")
    elif config['event end'] == "time":
 	time.sleep(float(config['event end time'])/1000)
    else: error("Error in configuration \"event end\", input must be \"keypress/time\"")
 
-#TODO refresh
+#TODO
+   #Process refresh
    if config['refresh'] == "yes":
 	pass
    elif config['refresh'] == "no":
@@ -141,18 +115,39 @@ def process_user(config):
 	else: error("Error in configuration \"type\", input must be \"picture/word/mouse\"")
 
 #TODO when to fire ISI?
+	#Show ISI image after each iteration
 	show_image(config['ISI image'], config['screen'], 'picture')
 	time.sleep(float(config['ISI duration'])/1000)	
 
    	if fired is True: firelist.append(i)
 	outlist.append(out)	
 
-#TODO show blank image at the end
+#TODO 
+   #show blank image at the end
    #show_image(blank, config['screen'], 'picture')
 
    config['fire iteration'] = firelist
    config['order list'] = outlist
    return config
+
+def processYieldField(typeIn, directory):
+    global objList
+    if os.path.isfile(directory) and typeIn == 'word':
+	words = list()
+	with open(directory, 'r') as f:
+	 for line in f:
+	   cand = line.rsplit()[0]
+	   if type(cand) != str : error("Error in word list file")
+   	   words.append(cand)
+    	objList = words
+
+    elif os.path.isdir(directory) and typeIn == 'picture':
+	fileNames = list()
+	path, dirs, files = os.walk(directory).next()
+	for f in files:
+		fileNames.append(path+"/"+f)
+	objList = fileNames
+    else: error("Error in configuration \"directory\", input must be valid directory or file")
 
 def process_config(filename):
    config = {}
@@ -162,7 +157,7 @@ def process_config(filename):
    		k, x, v = row
    		config[k] = v
 
-   processFiles(config['type'], config['directory'])
+   processYieldField(config['type'], config['directory'])
    # Some error checking and cleaning of the config file
    config.pop('Name')
    if config['fire iteration'] != "random":
