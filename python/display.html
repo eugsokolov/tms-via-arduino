@@ -25,8 +25,8 @@
 
 <!-- Double Image  -->
 <div style="text-align:center;">
-<div class="double-box"><img id="image-1" style="height:inherit;width:fill;" src="images/lionandcub.jpg"  /></div>
-<div class="double-box"><img id="image-2" style="height:inherit;width:fill;" src="images/lionandcub.jpg"  /></div>
+<div class="double-box" id="div-1"><img id="image-1" style="height:inherit;width:fill;" src="images/lionandcub.jpg"  /></div>
+<div class="double-box" id="div-2"><img id="image-2" style="height:inherit;width:fill;" src="images/lionandcub.jpg"  /></div>
 <span id="text-1"></span>
 </div>
 
@@ -36,12 +36,16 @@
     socket.on( 'update', function( data ) { // Receive new update with data
         console.log( data ); // Received data
 
-        /* Not sure the format it is being received in, but you can call:
-            updateImage( HTML_IMAGE_ID, IMAGE_URL );
-            updateImage( HTML_SPAN_ID, TEXT );
-        */
+        if( data[0] == 'image' ) {
+            changeClass( 'div-1', 'single-box' );
+            updateImage( 'image-1', data[1] );
+        } else if( data[0] == 'text' ) {
+            changeClass( 'div-1', 'double-box' );
+            updateText( 'text-1', data[1] );
+        }
     });
 
+    // Given an HTML image's id, update the url of the image
     function updateImage( id, url ) {
         var imageTag = document.getElementById( id );
         
@@ -52,6 +56,7 @@
         return true;
     }
 
+    // Given an HTML span's id, update the text in the span
     function updateText( id, text ) {
         var textTag = document.getElementById( id );
 
@@ -59,6 +64,17 @@
             return false;
 
         textTag.innerText = text;
+        return true;
+    }
+
+    // Given a div's id, change the class of the image
+    function changeClass( id, newClass ) {
+        var div = document.getElementById( id );
+
+        if( !div )
+            return false;
+
+        div.className = newClass;
         return true;
     }
 
