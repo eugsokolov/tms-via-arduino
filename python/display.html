@@ -1,22 +1,21 @@
 <html>
 <head>
-<h2></h2>
-<style>
-.double-box {
-    display: inline-block;
-    width: 45%;
-    height: 65%;
-    margin: 5px;
+    <script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
+    <style>
+        .double-box {
+        display: inline-block;
+        width: 45%;
+        height: 65%;
+        margin: 5px;
 
-}
-.single-box {
-    display: inline-block;
-    width: 90%;
-    height: 90%;
-    margin: 5px;
-}
-
-</style>
+        }
+        .single-box {
+        display: inline-block;
+        width: 90%;
+        height: 90%;
+        margin: 5px;
+        }
+    </style>
 </head>
 
 <body>
@@ -26,9 +25,44 @@
 
 <!-- Double Image  -->
 <div style="text-align:center;">
-<div class="double-box"><img style="height:inherit;width:fill;" src="images/lionandcub.jpg"  /></div>
-<div class="double-box"><img style="height:inherit;width:fill;" src="images/lionandcub.jpg"  /></div>
+<div class="double-box"><img id="image-1" style="height:inherit;width:fill;" src="images/lionandcub.jpg"  /></div>
+<div class="double-box"><img id="image-2" style="height:inherit;width:fill;" src="images/lionandcub.jpg"  /></div>
+<span id="text-1"></span>
 </div>
+
+<script>
+    var socket = io();
+
+    socket.on( 'update', function( data ) { // Receive new update with data
+        console.log( data ); // Received data
+
+        /* Not sure the format it is being received in, but you can call:
+            updateImage( HTML_IMAGE_ID, IMAGE_URL );
+            updateImage( HTML_SPAN_ID, TEXT );
+        */
+    });
+
+    function updateImage( id, url ) {
+        var imageTag = document.getElementById( id );
+        
+        if( !imageTag )
+            return false;
+
+        imageTag.src = url;
+        return true;
+    }
+
+    function updateText( id, text ) {
+        var textTag = document.getElementById( id );
+
+        if( !textTag )
+            return false;
+
+        textTag.innerText = text;
+        return true;
+    }
+
+</script>
 
 </body>
 </html>
