@@ -31,17 +31,17 @@
 </div>
 
 <script>
-    var socket = io();
+    var socket = io.connect('http://' + document.domain + ':' + location.port);
 
     socket.on( 'update', function( data ) { // Receive new update with data
         console.log( data ); // Received data
 
-        if( data[0] == 'image' ) {
+        if( data[0] == 'picture' ) {
             changeClass( 'div-1', 'single-box' );
-            updateImage( 'image-1', data[1] );
-        } else if( data[0] == 'text' ) {
+            updateImage( 'image-1', data[2] );
+        } else if( data[0] == 'word' ) {
             changeClass( 'div-1', 'double-box' );
-            updateText( 'text-1', data[1] );
+            updateText( 'text-1', data[2] );
         }
     });
 

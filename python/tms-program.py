@@ -18,12 +18,14 @@ if __name__ == '__main__':
 
 @socketio.on('connect')
 def test_connect():
+	print('starting..')
 	start()
 
 @socketio.on('update')
 def show_image(obj, screen, typeOut):
-	emit('update', (typeOut, screen, obj))
-	print obj, screen, typeOut
+	obj2 = os.path.join(app.root_path, obj)
+	print typeOut, screen, obj
+	emit('update', (typeOut, screen, obj2))
 
 @socketio.on('disconnect')
 def test_disconnect():
