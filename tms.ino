@@ -2,6 +2,11 @@
  *  http://www.akeric.com/blog/?p=1140
  */
 
+/*
+# To find pinout of BNC cable: 
+#http://www.electronics2000.co.uk/pin-out/rfconns.php
+*/
+
 int ledPin = A0;   // select the pin for the LED
 int val = 0;       // variable to store the data from the serial port
 
