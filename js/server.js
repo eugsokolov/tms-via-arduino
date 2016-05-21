@@ -20,7 +20,6 @@ var server = http.createServer(function (req, res) {
             displayForm(res);
         } else if (req.method.toLowerCase() == 'post') {
             processForm(req, res);
-            displayTest(res);
         }
     } else if ( url && ( url.match( /.*\.png$/ ) || url.match( /.*\.jpg$/ ) ) ) {
         displayImage( url.substring( 1, url.length ), res ); // Remove leading "/"
@@ -33,6 +32,17 @@ var server = http.createServer(function (req, res) {
     }
 });
 
+
+function displayForm(res) {
+    fs.readFile(config, function (err, data) {
+        res.writeHead(200, {
+            'Content-Type': 'text/html',
+            'Content-Length': data.length
+        });
+        res.write(data);
+        res.end();
+    });
+}
 
 function displayImage(img,res) {
     fs.readFile(img, function (err, data) {
@@ -51,20 +61,10 @@ function displayImage(img,res) {
     });
 }
 
-function displayForm(res) {
-    fs.readFile(config, function (err, data) {
-        res.writeHead(200, {
-            'Content-Type': 'text/html',
-            'Content-Length': data.length
-        });
-        res.write(data);
-        res.end();
-    });
-}
 
-function displayTest(res) {
+function displayTest(res, freq) {
     fs.readFile(display, 'utf8', function (err, data) {
-        data = data.replace( '{{config}}', 'var config = { frequency: 5 };' + startTest.toString() ); // Put function into html file
+        data = data.replace( '{{config}}', 'var config = { frequency: '+freq+' };' + startTest.toString() ); // Put function into html file
         res.writeHead(200, {
             'Content-Type': 'text/html',
             'Content-Length': data.length,
@@ -95,12 +95,10 @@ function processForm(req, res) {
     var form = new formidable.IncomingForm();
     form.parse(req, function (err, fields) {
 	console.log(fields); // Print form data
-	for(var i = 0; i < fields.users; i++){
-		var name = fields.names[i];
-		var results = processUser(res, fields);
-		logUser(fields, results, name);
-//TODO why is console.log printing all JSON saved to xxx at very end?
-	}
+	displayTest(res, fields.iterations);
+	var results = processUser(res, fields);
+	logUser(fields, results, fields.userName);
+
     });
 }
 
@@ -238,13 +236,13 @@ function emitSocket(thing, type){
 
 	}
 	else if(type == 'picture'){
-
+/*
 io.on('connection', function(socket){
   socket.on('update', function(thing){
     io.emit('update', thing);
   });
 });
-	}
+*/	}
 
 
 }

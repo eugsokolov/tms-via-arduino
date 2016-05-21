@@ -4,11 +4,13 @@
 </head>
 <body>
  <form method="post" action="/">
-  <div id="numUsers">
+<!--  <div id="numUsers">
   Number of users? <input type="text" name="users"> <br>
   </div>
   <div id="userNames">
   </div>
+-->
+  Subject Name <input type="text" name="userName"> <br>
   Iterations per user? <input type="text" name="iterations"> <br>
   Event type?
   <input type="radio" name="type" value="picture" checked> Picture     
@@ -45,6 +47,7 @@
 
 </form>
 <script>
+/*
 function drawPrompts(count) {
     var box = document.getElementById('userNames');
     box.innerHTML = '';
@@ -58,7 +61,7 @@ document.getElementById('numUsers').onkeyup = function(e) {
    if( !isNaN(count) && count >= 0 )
        drawPrompts(count);
 }
-
+*/
 document.getElementById('keypress').onclick = function(e){
         document.getElementById('eventEndTime').style.display = 'none';
 }
