@@ -1,62 +1,62 @@
-
-"""
-Socket setup
-"""
-from flask import Flask, render_template
-from flask_socketio import SocketIO, emit
-
-app = Flask(__name__)
-app.config['SECRET_KEY'] = 'secret!'
-socketio = SocketIO(app)
-
-@app.route('/')
-def index():
-    return render_template('display.html')
-
-if __name__ == '__main__':
-    socketio.run(app)
-
-@socketio.on('connect')
-def test_connect():
-	print('starting..')
-	start()
-
-@socketio.on('update')
-def show_image(obj, screen, typeOut):
-	obj2 = os.path.join(app.root_path, obj)
-	print typeOut, screen, obj
-	emit('update', (typeOut, screen, obj2))
-
-@socketio.on('disconnect')
-def test_disconnect():
-    print('Client disconnected')
-
-"""
-Logic process
-"""
 import serial
 import csv
 import random
 import time, datetime
 import os, subprocess, syslog
+import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
 
+# Global variables (plot figure, list of inputs)
+plt.figure(figsize=(20,10))
+plt.axis('off')
+plt.plot()
+plt.show(block=False)
 objList = []
 
 def error(message):
 	print message
 	exit()
 
+def show_image(obj, screen, typeOut):
+#Good reference for matplotlib
+#http://matplotlib.org/api/pyplot_summary.html
+    print typeOut, screen, obj
+    if typeOut == 'image':
+	img = mpimg.imread(obj)
+	if screen == 'single':
+	    plt.imshow(img)
+	elif screen == 'double':
+	    plt.gcf().add_subplot(121)
+	    plt.axis('off')
+	    plt.imshow(img)
+	    plt.gcf().add_subplot(122)
+	    plt.axis('off')
+	    plt.imshow(img)
+	else: error('Error with screen type, must be single or double')
+	plt.draw()
+    elif typeOut == 'text':
+#TODO fix text
+	if screen == 'single':
+	    #plt.text(4, 6, obj, fontsize=30)
+	    plt.text(0.5, 0.5,obj, horizontalalignment='center',
+			verticalalignment='center')
+	    plt.axis([0,10,0,10])
+	elif screen == 'double':
+	    pass
+	else: error('Error with screen type, must be single or double')
+	plt.draw()
+    else: error('Error with type, must be image or text')
+
 def fire_tms(port):
 # To find pinout of BNC cable: 
 #http://www.electronics2000.co.uk/pin-out/rfconns.php
-	port = "/dev/ttyACM0"
 	print "FIRING TMS : ", port
 	#arduino = serial.Serial(port, 230400)
 	#arduino.write('1')
 	#arduino.close()
 
 def determine_fire(fireiter, i):
-   if fireiter is 'random':
+   if fireiter == 'random':
    	r = random.random()
    	if r > 0.5: return True
    	else: return False
@@ -110,15 +110,15 @@ def process_user(config):
    outlist = []
    for i in range(1, int(config['iterations per user'])+1):
 	print i
-   	if (config['type'] == 'picture') or (config['type'] == 'word'):
+   	if (config['type'] == 'image') or (config['type'] == 'text'):
    	 fired, out = process_type(config, i)
    	elif (config['type'] == 'mouse'):
    	 error("mouse not yet implemented")
-	else: error("Error in configuration \"type\", input must be \"picture/word/mouse\"")
+	else: error("Error in configuration \"type\", input must be \"image/text/mouse\"")
 
 #TODO when to fire ISI?
 	#Show ISI image after each iteration
-	show_image(config['ISI image'], config['screen'], 'picture')
+	show_image(config['ISI image'], config['screen'], 'image')
 	time.sleep(float(config['ISI duration'])/1000)	
 
    	if fired is True: firelist.append(i)
@@ -126,7 +126,7 @@ def process_user(config):
 
 #TODO 
    #show blank image at the end
-   #show_image(blank, config['screen'], 'picture')
+   #show_image(blank, config['screen'], 'image')
 
    config['fire iteration'] = firelist
    config['order list'] = outlist
@@ -134,16 +134,16 @@ def process_user(config):
 
 def processYieldField(typeIn, directory):
     global objList
-    if os.path.isfile(directory) and typeIn == 'word':
+    if os.path.isfile(directory) and typeIn == 'text':
 	words = list()
 	with open(directory, 'r') as f:
 	 for line in f:
 	   cand = line.rsplit()[0]
-	   if type(cand) != str : error("Error in word list file")
+	   if type(cand) != str : error("Error in text list file")
    	   words.append(cand)
     	objList = words
 
-    elif os.path.isdir(directory) and typeIn == 'picture':
+    elif os.path.isdir(directory) and typeIn == 'image':
 	fileNames = list()
 	path, dirs, files = os.walk(directory).next()
 	for f in files:

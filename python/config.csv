@@ -1,13 +1,13 @@
 Name,Options,Example
 name,text,test
 sex,m/f,m
-iterations per user,Integer,5
+iterations per user,Integer,3
 screen,single/double,single
-type,word/picture/mouse,picture
-directory,directory path/word text,images/
+type,image/text/mouse,text
+directory,directory path/word text,words
 TMS port,console port,/dev/ttyACM0
 TMS before or after,before/after,after
-fire iteration,random/integer array,"[1,3,5]"
+fire iteration,random/integer array,"[1,3]"
 time to fire,Integer (ms),300
 event end,keypress/time,time
 event end time,Integer (ms),1000
