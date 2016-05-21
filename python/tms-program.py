@@ -21,6 +21,8 @@ def error(message):
 #http://matplotlib.org/api/pyplot_summary.html
 def show_image(obj, screen, typeOut):
     print typeOut, screen, obj
+    plt.clf()
+    plt.axis('off')
     if typeOut == 'image':
 	img = mpimg.imread(obj)
 	if screen == 'single':
@@ -35,18 +37,22 @@ def show_image(obj, screen, typeOut):
 	else: error('Error with screen type, must be single or double')
 	plt.draw()
     elif typeOut == 'text':
-#TODO fix text
 	if screen == 'single':
-	    #plt.text(4, 6, obj, fontsize=30)
-	    plt.text(0.5, 0.5,obj, horizontalalignment='center',
-			verticalalignment='center')
+	    ax = plt.gcf().add_subplot(111)
+	    ax.text(4, 6, obj, fontsize=100)
 	    plt.axis([0,10,0,10])
 	elif screen == 'double':
-	    pass
+	    ax1 = plt.gcf().add_subplot(121)
+	    plt.axis('off')
+	    ax1.text(3, 5, obj, fontsize=100)
+	    plt.axis([0,10,0,10])
+	    ax2 = plt.gcf().add_subplot(122)
+	    plt.axis('off')
+	    ax2.text(4, 5, obj, fontsize=100)
+	    plt.axis([0,10,0,10])
 	else: error('Error with screen type, must be single or double')
 	plt.draw()
     else: error('Error with type, must be image or text')
-
 
 #Fire TMS via Arduino as located by port Arduino is on
 #To be used with tms.ino
@@ -56,7 +62,7 @@ def fire_tms(port):
 	#arduino.write('1')
 	#arduino.close()
 
-#Determine is TMS should be fired, given input array or randomization
+#Determine if TMS should be triggered, given input array or randomization
 def determine_fire(fireiter, i):
    if fireiter == 'random':
    	r = random.random()
@@ -129,7 +135,7 @@ def process_user(config):
    	if fired is True: firelist.append(i)
 	outlist.append(out)	
 
-#TODO 
+#TODO show blank at the end? or just close? 
    #show blank image at the end
    #show_image(blank, config['screen'], 'image')
 
@@ -148,14 +154,13 @@ def processYieldField(typeIn, directory):
 	   if type(cand) != str : error("Error in text list file")
    	   words.append(cand)
     	objList = words
-
     elif os.path.isdir(directory) and typeIn == 'image':
 	fileNames = list()
 	path, dirs, files = os.walk(directory).next()
 	for f in files:
 		fileNames.append(path+"/"+f)
 	objList = fileNames
-    else: error("Error in configuration \"directory\", input must be valid directory or file")
+    else: error("Error in configuration \"type\" or \"directory\"")
 
 def process_config(filename):
    config = {}
@@ -164,7 +169,6 @@ def process_config(filename):
    	for row in reader:
    		k, x, v = row
    		config[k] = v
-
    processYieldField(config['type'], config['directory'])
    # Some error checking and cleaning of the config file
    config.pop('Name')
@@ -182,7 +186,6 @@ def input_user_data(name, sex):
       f.write("Time," + d + '\n')
       f.write("Name," + name + '\n')
       f.write("Gender," + sex + '\n')
-      f.close()
    return filename
 
 def log_user_data(info, filename):
