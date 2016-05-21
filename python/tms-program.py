@@ -17,9 +17,9 @@ def error(message):
 	print message
 	exit()
 
-def show_image(obj, screen, typeOut):
 #Good reference for matplotlib
 #http://matplotlib.org/api/pyplot_summary.html
+def show_image(obj, screen, typeOut):
     print typeOut, screen, obj
     if typeOut == 'image':
 	img = mpimg.imread(obj)
@@ -47,14 +47,16 @@ def show_image(obj, screen, typeOut):
 	plt.draw()
     else: error('Error with type, must be image or text')
 
+
+#Fire TMS via Arduino as located by port Arduino is on
+#To be used with tms.ino
 def fire_tms(port):
-# To find pinout of BNC cable: 
-#http://www.electronics2000.co.uk/pin-out/rfconns.php
 	print "FIRING TMS : ", port
 	#arduino = serial.Serial(port, 230400)
 	#arduino.write('1')
 	#arduino.close()
 
+#Determine is TMS should be fired, given input array or randomization
 def determine_fire(fireiter, i):
    if fireiter == 'random':
    	r = random.random()
@@ -65,11 +67,13 @@ def determine_fire(fireiter, i):
 	else: return False
    else: error("Error in configuration \"fire iteration\", input must integer array or \"random\"")
 
+#Yield the next random object from global list objList
 def get_next():
     r = random.randrange(0,len(objList)) 
     out = objList[r]
     yield out
 
+#The bulk of the processing...
 def process_type(config, i):
    # Get random Image or Word to show from directory given
    out = get_next().next()
@@ -105,6 +109,7 @@ def process_type(config, i):
 
    return fire, out
 
+#Process the user information
 def process_user(config):
    firelist = []
    outlist = []
@@ -132,6 +137,7 @@ def process_user(config):
    config['order list'] = outlist
    return config
 
+#Process the input images/text to create global objList of image/text objects to yield
 def processYieldField(typeIn, directory):
     global objList
     if os.path.isfile(directory) and typeIn == 'text':
