@@ -2,7 +2,7 @@ import serial
 import csv
 import random
 import time, datetime
-import os, subprocess, syslog
+import os
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 
@@ -105,15 +105,19 @@ def process_type(config, i):
 	time.sleep(float(config['event end time'])/1000)
    else: error("Error in configuration \"event end\", input must be \"keypress/time\"")
 
-#TODO
    #Process refresh
    if config['refresh'] == "yes":
 	pass
    elif config['refresh'] == "no":
 	pass 
+#TODO
    else: error("Error in configuration \"refresh\", input must be \"yes/no\"")
 
    return fire, out
+
+def process_mouse(config, i):
+#TODO
+	return 1
 
 #Process the user information
 def process_user(config):
@@ -125,19 +129,19 @@ def process_user(config):
    	 fired, out = process_type(config, i)
    	elif (config['type'] == 'mouse'):
    	 error("mouse not yet implemented")
+	 fired, out = process_mouse(config, i)
 	else: error("Error in configuration \"type\", input must be \"image/text/mouse\"")
 
-#TODO when to fire ISI?
-	#Show ISI image after each iteration
-	show_image(config['ISI image'], config['screen'], 'image')
-	time.sleep(float(config['ISI duration'])/1000)	
+	if config['ISI step'] != 'none':
+	   show_image(config['ISI step'], config['screen'], 'image')
+	   time.sleep(float(config['ISI step duration'])/1000)	
 
    	if fired is True: firelist.append(i)
 	outlist.append(out)	
 
-#TODO show blank at the end? or just close? 
-   #show blank image at the end
-   #show_image(blank, config['screen'], 'image')
+   if config['ISI end'] != 'none':
+	show_image(config['ISI end'], config['screen'], 'image')
+	time.sleep(float(config['ISI end duration'])/1000)	
 
    config['fire iteration'] = firelist
    config['order list'] = outlist

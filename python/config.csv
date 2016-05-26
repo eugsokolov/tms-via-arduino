@@ -2,7 +2,7 @@ Name,Options,Example
 name,text,test
 sex,m/f,m
 iterations per user,Integer,3
-screen,single/double,single
+screen,single/double,double
 type,image/text/mouse,text
 directory,directory path/word text,words
 TMS port,console port,/dev/ttyACM0
@@ -12,5 +12,7 @@ time to fire,Integer (ms),300
 event end,keypress/time,time
 event end time,Integer (ms),1000
 refresh,yes/no,yes
-ISI image,File Path,images/whitescreen.png
-ISI duration,Integer (ms),1000
+ISI step,File Path/none,images/whitescreen.png
+ISI step duration,Integer (ms),1000
+ISI end,File Path/none,images/whitescreen.png
+ISI end duration,Integer (ms),1000
