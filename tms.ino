@@ -7,6 +7,7 @@
 #http://www.electronics2000.co.uk/pin-out/rfconns.php
 */
 
+int timeDelay = 10; // time to power on TMS port
 int ledPin = A0;   // select the pin for the LED
 int val = 0;       // variable to store the data from the serial port
 
@@ -21,7 +22,7 @@ void loop () {
   val = Serial.read();          // read the serial port
   if(val > '0' && val <'9'){
     digitalWrite(ledPin, HIGH);   // turn the LED on (HIGH is the voltage level)
-    delay(1000);                  // wait for a second
+    delay(timeDelay);		  // delay
     digitalWrite(ledPin, LOW);    // turn the LED off by making the voltage LOW
 
   }
