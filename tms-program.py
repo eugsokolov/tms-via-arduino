@@ -153,11 +153,11 @@ def processYieldField(typeIn, directory):
     if os.path.isfile(directory) and typeIn == 'text':
       words = list()
       with open(directory, 'r') as f:
-      for line in f:
-        cand = line.rsplit()[0]
-        if type(cand) != str : error("Error in text list file")
+         for line in f:
+           cand = line.rsplit()[0]
+           if type(cand) != str : error("Error in text list file")
            words.append(cand)
-        objList = words
+      objList = words
     elif os.path.isdir(directory) and typeIn == 'image':
       fileNames = list()
       path, dirs, files = os.walk(directory).next()
