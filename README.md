@@ -1,11 +1,6 @@
-Control TMS experiment through Arduino
+Control TMS experiment through USB port (using Arduino adapter)
+https://en.wikipedia.org/wiki/Transcranial_magnetic_stimulation
 
-Setup:
-Must have Python 2.7 installed with the following libraries:
-pip install XXX
+Experiment consists of flashing sets of images or text while simultaneously firing TMS pulses to the participant. In addition to software, controller must also have a BNC to USB adapter, which uses an Arduino microprocessor to communicate between the software and TMS machine.
 
-Plug Arduino to USB port and TMS to Arduino as shown:
-picture
-
-Usage:
-Run tms-program.py (python tms-program.py)
+Read 'manual.docx' for further instructions
