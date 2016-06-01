@@ -82,7 +82,7 @@ def get_next():
 #The bulk of the processing...
 def process_type(config, i):
    # Get random Image or Word to show from directory given
-   out = get_next().next()
+   out = next(get_next())
    typeOut = config['type']
    screen = config['screen']
    fire = determine_fire(config['fire iteration'], i)
