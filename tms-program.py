@@ -148,7 +148,7 @@ def process_user(config):
    return config
 
 #Process the input images/text to create global objList of image/text objects to yield
-def processYieldField(typeIn, directory):
+def processYieldField(typeIn, directory, ISI1, ISI2):
     global objList
     if os.path.isfile(directory) and typeIn == 'text':
       words = list()
@@ -162,7 +162,9 @@ def processYieldField(typeIn, directory):
       fileNames = list()
       path, dirs, files = os.walk(directory).next()
       for f in files:
-          fileNames.append(path+"/"+f)
+          fileNames.append(path+""+f)
+      if ISI1 in fileNames: fileNames.remove(ISI1)
+      if ISI2 in fileNames: fileNames.remove(ISI2)
       objList = fileNames
     else: error("Error in configuration \"type\" or \"directory\"")
 
@@ -173,7 +175,7 @@ def process_config(filename):
      for row in reader:
           k, x, v = row
           config[k] = v
-   processYieldField(config['type'], config['directory'])
+   processYieldField(config['type'], config['directory'], config['ISI step'], config['ISI end'])
    # Some error checking and cleaning of the config file
    config.pop('Name')
    if config['fire iteration'] != "random":
@@ -184,8 +186,8 @@ def process_config(filename):
    return config     
 
 def input_user_data(name, sex):
-   d = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S') 
-   filename = name + "-" + d + ".log"
+   d = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S') 
+   filename = os.getcwd().replace("\\", '/') + '/' + name + "-" + d + ".log"
    with open(filename, 'w') as f:
       f.write("Time," + d + '\n')
       f.write("Name," + name + '\n')
