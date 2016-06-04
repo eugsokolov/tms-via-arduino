@@ -16,3 +16,4 @@ ISI step,File Path/none,images/whitescreen.png
 ISI step duration,Integer (ms),1000
 ISI end,File Path/none,images/whitescreen.png
 ISI end duration,Integer (ms),1000
+Results Folder,path,log/
