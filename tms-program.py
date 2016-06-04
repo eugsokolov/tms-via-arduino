@@ -8,7 +8,7 @@ import matplotlib.image as mpimg
 
 # Global variables (plot figure, list of inputs)
 configFile = "config.csv"
-fullscreen = "True"
+fullscreen = True
 xaxis = 16
 yaxis = 13
 
@@ -111,7 +111,8 @@ def process_type(config, i):
 
    #Process how to end event
    if config['event end'] == "keypress":
-     raw_input("waiting for keypress to end...")
+     input("waiting for keypress to end...")
+#TODO fix waiting for input bug on Windows
    elif config['event end'] == "time":
      time.sleep(float(config['event end time'])/1000)
    else: error("Error in configuration \"event end\", input must be \"keypress/time\"")
@@ -128,6 +129,7 @@ def process_type(config, i):
 
 def process_mouse(config, i):
 #TODO
+#record time from image start to when user presses key (can press different keys)
      return 1
 
 #Process the user information
@@ -173,7 +175,7 @@ def processYieldField(typeIn, directory, ISI1, ISI2):
       fileNames = list()
       path, dirs, files = os.walk(directory).next()
       for f in files:
-          fileNames.append(path+""+f)
+          fileNames.append(path+"/"+f)
       if ISI1 in fileNames: fileNames.remove(ISI1)
       if ISI2 in fileNames: fileNames.remove(ISI2)
       objList = fileNames
@@ -189,7 +191,7 @@ def process_config(filename):
    processYieldField(config['type'], config['directory'], config['ISI step'], config['ISI end'])
    # Some error checking and cleaning of the config file
    config.pop('Name')
-   if config['fire iteration'] != "random":
+   if config['fire iteration'] != "random" or config['fire iteration'] != "all":
      s = config.pop('fire iteration')
      fireiter = [int(i) for i in s[1:-1].split(',')] 
      config['fire iteration'] = fireiter
