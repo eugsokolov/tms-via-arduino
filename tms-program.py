@@ -7,9 +7,16 @@ import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 
 # Global variables (plot figure, list of inputs)
-plt.figure(figsize=(20,10))
+configFile = "config.csv"
+fullscreen = "True"
+xaxis = 16
+yaxis = 13
+
+plt.figure(figsize=(xaxis,yaxis))
+plt.ion()
 plt.axis('off')
 plt.plot()
+if fullscreen is True: plt.get_current_fig_manager().window.state('zoomed')
 plt.show(block=False)
 objList = []
 
@@ -36,6 +43,7 @@ def show_image(obj, screen, typeOut):
          plt.imshow(img)
       else: error('Error with screen type, must be single or double')
       plt.draw()
+      plt.pause(0.001)
     elif typeOut == 'text':
       if screen == 'single':
          ax = plt.gcf().add_subplot(111)
@@ -52,6 +60,7 @@ def show_image(obj, screen, typeOut):
          plt.axis([0,10,0,10])
       else: error('Error with screen type, must be single or double')
       plt.draw()
+      plt.pause(0.001)
     else: error('Error with type, must be image or text')
 
 #Fire TMS via Arduino as located by port Arduino is on
@@ -59,12 +68,14 @@ def show_image(obj, screen, typeOut):
 def fire_tms(port):
      print("FIRING TMS : " + str(port))
      #arduino = serial.Serial(port, 230400)
-     #arduino.write('1')
+     #arduino.write(b'1')
      #arduino.close()
 
 #Determine if TMS should be triggered, given input array or randomization
 def determine_fire(fireiter, i):
-   if fireiter == 'random':
+   if fireiter == 'all':
+     return True
+   elif fireiter == 'random':
      r = random.random()
      if r > 0.5: return True
      else: return False
@@ -185,9 +196,9 @@ def process_config(filename):
 
    return config     
 
-def input_user_data(name, sex):
+def input_user_data(name, sex, logFolder):
    d = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S') 
-   filename = os.getcwd().replace("\\", '/') + '/' + name + "-" + d + ".log"
+   filename = logFolder + '/' + name + "-" + d + ".log"
    with open(filename, 'w') as f:
       f.write("Time," + d + '\n')
       f.write("Name," + name + '\n')
@@ -202,8 +213,9 @@ def log_user_data(info, filename):
 
 def start():
    config = process_config("config.csv")
-   f = input_user_data(config['name'], config['sex'])
+   f = input_user_data(config['name'], config['sex'], config['Results Folder'])
    info = process_user(config)
    log_user_data(info, f)
+   plt.close()
 
 start()
