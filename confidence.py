@@ -6,19 +6,21 @@ import os
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 
-# Global variables (plot figure, list of inputs)
-configFile = "config.csv"
-fullscreen = True
+# Parameters to change
+wordFile = "words.csv"
 xaxis = 16
 yaxis = 13
+fullscreen = True
 
+# Global variables: plot figure, list of inputs
+objList = []
+objDict = {}
 plt.figure(figsize=(xaxis,yaxis))
 plt.ion()
 plt.axis('off')
 plt.plot()
-if fullscreen is True: plt.get_current_fig_manager().window.state('zoomed')
+#if fullscreen is True: plt.get_current_fig_manager().window.state('zoomed')
 plt.show(block=False)
-objList = []
 
 def error(message):
      print(message)
@@ -26,198 +28,111 @@ def error(message):
 
 #Good reference for matplotlib
 #http://matplotlib.org/api/pyplot_summary.html
-def show_image(obj, screen, typeOut):
-    print(typeOut, screen, obj)
+def show_image(word, bar):
+    plt.clf()
+    ax1 = plt.gcf().add_subplot(211)
+    plt.axis('off')
+    ax1.text(4, 5, word, fontsize=100)
+    plt.axis([0,10,0,10])
+    plt.gcf().add_subplot(212)
+    plt.axis('off')
+    img = mpimg.imread(bar)
+    plt.imshow(img)
+    plt.draw()
+    plt.pause(0.0001)
+
+def show_fixation_image(image):
     plt.clf()
     plt.axis('off')
-    if typeOut == 'image':
-      img = mpimg.imread(obj)
-      if screen == 'single':
-         plt.imshow(img)
-      elif screen == 'double':
-         plt.gcf().add_subplot(121)
-         plt.axis('off')
-         plt.imshow(img)
-         plt.gcf().add_subplot(122)
-         plt.axis('off')
-         plt.imshow(img)
-      else: error('Error with screen type, must be single or double')
-      plt.draw()
-      plt.pause(0.001)
-    elif typeOut == 'text':
-      if screen == 'single':
-         ax = plt.gcf().add_subplot(111)
-         ax.text(4, 6, obj, fontsize=100)
-         plt.axis([0,10,0,10])
-      elif screen == 'double':
-         ax1 = plt.gcf().add_subplot(121)
-         plt.axis('off')
-         ax1.text(3, 5, obj, fontsize=100)
-         plt.axis([0,10,0,10])
-         ax2 = plt.gcf().add_subplot(122)
-         plt.axis('off')
-         ax2.text(4, 5, obj, fontsize=100)
-         plt.axis([0,10,0,10])
-      else: error('Error with screen type, must be single or double')
-      plt.draw()
-      plt.pause(0.001)
-    else: error('Error with type, must be image or text')
+    img = mpimg.imread(image)
+    plt.imshow(img)
+    plt.draw()
+    plt.pause(0.001)
 
 #Fire TMS via Arduino as located by port Arduino is on
 #To be used with tms.ino
 def fire_tms(port):
-     print("FIRING TMS : " + str(port))
-     #arduino = serial.Serial(port, 230400)
-     #arduino.write(b'1')
-     #arduino.close()
+    print("FIRING TMS : " + str(port))
+    #arduino = serial.Serial(port, 230400)
+    #arduino.write(b'1')
+    #arduino.close()
 
-#Determine if TMS should be triggered, given input array or randomization
-def determine_fire(fireiter, i):
-   if fireiter == 'all':
-     return True
-   elif fireiter == 'random':
-     r = random.random()
-     if r > 0.5: return True
-     else: return False
-   elif type(fireiter) is list:
-     if i in fireiter: return True 
-     else: return False
-   else: error("Error in configuration \"fire iteration\", input must integer array or \"random\"")
+def get_user_input():
+    response = 'yes'
+    responseTime = '1'
 
-#Yield the next random object from global list objList
-def get_next():
-    r = random.randrange(0,len(objList)) 
+    return response,responseTime
+
+def process_image(word):
+    #show initial image and bar
+    show_image(word, 'images/lionandcub.jpg')
+    fire_tms('COM1')
+    key = ''
+    #TODO get user response and time
+    #while key != ord('y') or key != ord('n'):
+
+    #show initial bar chart
+    show_image('yes/no', 'images/taylor1.jpg')
+    #show stabalizing bar chart
+    show_image('yes/no', 'images/taylor2.jpg')
+    #showstable bar chart
+    show_image('yes/no', 'images/taylor3.jpg')
+    show_fixation_image('images/whitescreen.png')
+    time.sleep(0.5)
+    return {
+            'word': word,
+            'difficulty': objDict[word]['level'],
+            'truthness': objDict[word]['truth'],
+            'response': resp,
+            'responseTime': respTime
+            }
+
+#Return a random word from global list objList
+def get_random_word():
+    r = random.randrange(0,len(objList))
     out = objList[r]
-    yield out
-
-#The bulk of the processing...
-def process_type(config, i):
-   # Get random Image or Word to show from directory given
-   out = next(get_next())
-   typeOut = config['type']
-   screen = config['screen']
-   fire = determine_fire(config['fire iteration'], i)
-
-   #Process Image/Word with firing TMS
-   if config['TMS before or after'] == "before":
-     if fire is True: fire_tms(config['TMS port'])
-     time.sleep(float(config['time to fire'])/1000)
-     show_image(out, screen, typeOut)
-   elif config['TMS before or after'] == "after":
-     show_image(out, screen, typeOut)
-     time.sleep(float(config['time to fire'])/1000)
-     if fire is True: fire_tms(config['TMS port'])
-   else: error("Error in configuration \"TMS before or after\", input must be \"before/after\"")
-
-   #Process how to end event
-   if config['event end'] == "keypress":
-     input("waiting for keypress to end...")
-#TODO fix waiting for input bug on Windows
-   elif config['event end'] == "time":
-     time.sleep(float(config['event end time'])/1000)
-   else: error("Error in configuration \"event end\", input must be \"keypress/time\"")
-
-   #Process refresh
-   if config['refresh'] == "yes":
-     pass
-   elif config['refresh'] == "no":
-     pass 
-#TODO
-   else: error("Error in configuration \"refresh\", input must be \"yes/no\"")
-
-   return fire, out
-
-def process_mouse(config, i):
-#TODO
-#record time from image start to when user presses key (can press different keys)
-     return 1
+    return out
 
 #Process the user information
-def process_user(config):
-   firelist = []
-   outlist = []
-   for i in range(1, int(config['iterations per user'])+1):
-     print(i)
-     if (config['type'] == 'image') or (config['type'] == 'text'):
-         fired, out = process_type(config, i)
-     elif (config['type'] == 'mouse'):
-         error("mouse not yet implemented")
-         fired, out = process_mouse(config, i)
-     else: error("Error in configuration \"type\", input must be \"image/text/mouse\"")
+def process_block(block_size):
+    log = list()
+    for i in range(int(block_size)):
+        word = get_random_word()
+        data = process_image(word)
+        log.append(data)
+    return log
 
-     if config['ISI step'] != 'none':
-        show_image(config['ISI step'], config['screen'], 'image')
-        time.sleep(float(config['ISI step duration'])/1000)     
-
-     if fired is True: firelist.append(i)
-     outlist.append(out)     
-
-   if config['ISI end'] != 'none':
-     show_image(config['ISI end'], config['screen'], 'image')
-     time.sleep(float(config['ISI end duration'])/1000)     
-
-   config['fire iteration'] = firelist
-   config['order list'] = outlist
-   return config
-
-#Process the input images/text to create global objList of image/text objects to yield
-def processYieldField(typeIn, directory, ISI1, ISI2):
+def process_input_words(filename):
+    words = dict()
+    with open(filename, 'r') as f:
+        reader = csv.reader(f)
+        for row in reader:
+            word, level, truth = row
+            words[word] = {
+                    'level': level,
+                    'truth': truth
+                    }
+    words.pop('word')
+    global objDict
+    objDict = words
     global objList
-    if os.path.isfile(directory) and typeIn == 'text':
-      words = list()
-      with open(directory, 'r') as f:
-         for line in f:
-           cand = line.rsplit()[0]
-           if type(cand) != str : error("Error in text list file")
-           words.append(cand)
-      objList = words
-    elif os.path.isdir(directory) and typeIn == 'image':
-      fileNames = list()
-      path, dirs, files = os.walk(directory).next()
-      for f in files:
-          fileNames.append(path+"/"+f)
-      if ISI1 in fileNames: fileNames.remove(ISI1)
-      if ISI2 in fileNames: fileNames.remove(ISI2)
-      objList = fileNames
-    else: error("Error in configuration \"type\" or \"directory\"")
+    objList = list(words)
 
-def process_config(filename):
-   config = {}
-   with open(filename, 'r') as f:
-     reader = csv.reader(f)
-     for row in reader:
-          k, x, v = row
-          config[k] = v
-   processYieldField(config['type'], config['directory'], config['ISI step'], config['ISI end'])
-   # Some error checking and cleaning of the config file
-   config.pop('Name')
-   if config['fire iteration'] != "random" or config['fire iteration'] != "all":
-     s = config.pop('fire iteration')
-     fireiter = [int(i) for i in s[1:-1].split(',')] 
-     config['fire iteration'] = fireiter
-
-   return config     
-
-def input_user_data(name, sex, logFolder):
-   d = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S') 
-   filename = logFolder + '/' + name + "-" + d + ".log"
-   with open(filename, 'w') as f:
-      f.write("Time," + d + '\n')
-      f.write("Name," + name + '\n')
-      f.write("Gender," + sex + '\n')
-   return filename
-
-def log_user_data(info, filename):
-   with open(filename, 'a') as f:
-     for k,v in sorted(info.items()):
-        f.write(str(k) + ',' + str(v) + '\n')
-   f.close()
+def log_user_data(info):
+    logFolder = os.getcwd()
+    name = 'test'
+    d = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
+    filename = logFolder + '/' + name + "-" + d + ".log"
+    with open(filename, 'a') as f:
+        for k in info:
+            f.write(str(k))
+    f.close()
 
 def start():
-   config = process_config("config.csv")
-   f = input_user_data(config['name'], config['sex'], config['Results Folder'])
-   info = process_user(config)
-   log_user_data(info, f)
-   plt.close()
+    process_input_words(wordFile)
+    block_size = len(objList)/4  #to compensate for 4 TMS shocked areas
+    info = process_block(block_size)
+    log_user_data(info)
+    plt.close()
 
 start()
