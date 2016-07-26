@@ -5,6 +5,7 @@ import time, datetime
 import os
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
+import msvcrt
 
 # Parameters to change
 wordFile = "words.csv"
@@ -64,13 +65,16 @@ def get_user_input():
     return response,responseTime
 
 def process_image(word):
+    key = ''
     #show initial image and bar
     show_image(word, 'images/lionandcub.jpg')
     fire_tms('COM1')
-    key = ''
     #TODO get user response and time
-    #while key != ord('y') or key != ord('n'):
-
+    done = False
+    while not done:
+        if msvcrt.kbhit():
+            print('pressed: ', msvcrt.getch())
+            done = True
     #show initial bar chart
     show_image('yes/no', 'images/taylor1.jpg')
     #show stabalizing bar chart
@@ -79,6 +83,9 @@ def process_image(word):
     show_image('yes/no', 'images/taylor3.jpg')
     show_fixation_image('images/whitescreen.png')
     time.sleep(0.5)
+    if key == '':
+        resp = 'none'
+        respTime = 0
     return {
             'word': word,
             'difficulty': objDict[word]['level'],
