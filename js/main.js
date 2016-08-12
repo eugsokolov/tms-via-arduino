@@ -27,11 +27,16 @@ var j = 0; // image number
 var k = 0; // responses 
 var responses = new Array(num_iter * num_pics);
 
-// TODO input from user (see index.html)
-var user = 'test';
+var user = 'default';
 var port = 'COM1';
 var wordList = {};
 var text_output = "";
+
+/*
+if(!window.chrome) {
+    alert('MUST USE GOOGLE CHROME');
+}
+*/
 
 $('form').submit(function(e) {
 	e.preventDefault(); //dont try and submit the form
@@ -70,9 +75,16 @@ function get_image(type, difficulty) {
 }
 
 // TODO see fire-tms.js 
-// create serial connection and write a number to it
 function fire_tms(port) {
-
+// https://code.google.com/archive/p/seriality/
+// https://developer.chrome.com/apps/serial
+// http://stackoverflow.com/questions/24986049/chrome-extension-reading-from-serial-port
+// https://github.com/GoogleChrome/chrome-app-samples/blob/e347c538e8612aa3b0f90bde0fc721c4f0569125/samples/serial/ledtoggle/main.js
+//
+    const serial = chrome.serial;
+    serial.connect(port);
+    console.log('Writing to port' + port);
+    serial.send('1', '1', function() {} ); 
 }
 
 function show_first_image() {
@@ -200,7 +212,7 @@ $('#file_input').on('change',function(ev) {
       	for(i = 1; i < lines.length; i++) {
       		tmp = lines[i][0];
       		tmp = tmp.split(',');
-      		wordList[i-1] = tmp[1]; //populate word list
+      		wordList[tmp[0]] = tmp[1]; //populate word list
       	}
       }
     } else { 
