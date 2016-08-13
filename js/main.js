@@ -19,16 +19,15 @@ const hard = [
 const images = [easy, medium, hard];
 const isiImage = 'images/whitescreen.png'
 const default_word = 'yes or no';
-const num_iter = 4; // number of total iterations
 const num_pics = 3; // 3 taylors
 const time_between_frames = 1000; // milisec between each image
 var ii = 0; // iteration number
 var j = 0; // image number
 var k = 0; // responses 
-var responses = new Array(num_iter * num_pics);
 
 var user = 'default';
 var port = 'COM1';
+var num_iter = 0;
 var wordList = {};
 var text_output = "";
 
@@ -43,6 +42,8 @@ $('form').submit(function(e) {
 
 	user = $('#name').val();
 	port = $('#port').val();
+	num_iter = $('#iterations').val();
+    var responses = new Array(num_iter * num_pics);
 
 	$(window).data(
 		{'response_recorded': false,
@@ -85,6 +86,13 @@ function fire_tms(port) {
     serial.connect(port);
     console.log('Writing to port' + port);
     serial.send('1', '1', function() {} ); 
+
+
+/*
+    var serial = (document.getElementById("seriality")).Seriality();
+    serial.begin(serial.ports[0], 9600);
+    serial.write('1');
+*/
 }
 
 function show_first_image() {
