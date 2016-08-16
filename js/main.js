@@ -77,22 +77,11 @@ function get_image(type, difficulty) {
 
 // TODO see fire-tms.js 
 function fire_tms(port) {
-// https://code.google.com/archive/p/seriality/
-// https://developer.chrome.com/apps/serial
-// http://stackoverflow.com/questions/24986049/chrome-extension-reading-from-serial-port
-// https://github.com/GoogleChrome/chrome-app-samples/blob/e347c538e8612aa3b0f90bde0fc721c4f0569125/samples/serial/ledtoggle/main.js
-//
-    const serial = chrome.serial;
-    serial.connect(port);
-    console.log('Writing to port' + port);
-    serial.send('1', '1', function() {} ); 
-
-
 /*
-    var serial = (document.getElementById("seriality")).Seriality();
-    serial.begin(serial.ports[0], 9600);
-    serial.write('1');
+ http://www.fabiobiondi.com/blog/2014/02/html5-chrome-packaged-apps-and-arduino-bidirectional-communication-via-serial/
+ https://github.com/GoogleChrome/chrome-app-samples/tree/master/samples/serial/ledtoggle
 */
+
 }
 
 function show_first_image() {
