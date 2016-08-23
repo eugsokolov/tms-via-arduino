@@ -21,29 +21,80 @@ const isiImage = 'images/whitescreen.png'
 const default_word = 'yes or no';
 const num_pics = 3; // 3 taylors
 const time_between_frames = 1000; // milisec between each image
+
+
+
+
+const serial = chrome.serial;
+DEVICE_PATH = '';
+
+/* Converts a string to UTF-8 encoding in a Uint8Array; returns the array buffer. */
+var str2ab = function(str) {
+  var encodedString = unescape(encodeURIComponent(str));
+  var bytes = new Uint8Array(encodedString.length);
+  for (var i = 0; i < encodedString.length; ++i) {
+    bytes[i] = encodedString.charCodeAt(i);
+  }
+  return bytes.buffer;
+};
+
+var SerialConnection = function() {
+  this.connectionId = -1;
+  this.lineBuffer = "";
+  this.onConnect = new chrome.Event();
+  this.onReadLine = new chrome.Event();
+  this.onError = new chrome.Event();
+};
+
+SerialConnection.prototype.onConnectComplete = function(connectionInfo) {
+  if (!connectionInfo) {
+    console.log("Connection failed.");
+    return;
+  }
+  this.connectionId = connectionInfo.connectionId;
+  chrome.serial.onReceive.addListener(this.boundOnReceive);
+  chrome.serial.onReceiveError.addListener(this.boundOnReceiveError);
+  this.onConnect.dispatch();
+};
+
+SerialConnection.prototype.connect = function(path) {
+  serial.connect(path, this.onConnectComplete.bind(this))
+};
+
+SerialConnection.prototype.send = function(msg) {
+  if (this.connectionId < 0) {
+    throw 'Invalid connection';
+  }
+  serial.send(this.connectionId, str2ab(msg), function() {});
+};
+
+SerialConnection.prototype.disconnect = function() {
+  if (this.connectionId < 0) {
+    throw 'Invalid connection';
+  }
+  serial.disconnect(this.connectionId, function() {});
+};
+
+var connection = new SerialConnection();
+
 var ii = 0; // iteration number
 var j = 0; // image number
 var k = 0; // responses 
-
 var user = 'default';
-var port = 'COM1';
 var num_iter = 0;
 var wordList = {};
 var text_output = "";
-
-/*
-if(!window.chrome) {
-    alert('MUST USE GOOGLE CHROME');
-}
-*/
+var responses = new Array(num_iter * num_pics);
 
 $('form').submit(function(e) {
 	e.preventDefault(); //dont try and submit the form
 
 	user = $('#name').val();
-	port = $('#port').val();
 	num_iter = $('#iterations').val();
-    var responses = new Array(num_iter * num_pics);
+    	responses = new Array(num_iter * num_pics);
+
+	DEVICE_PATH = $('#port').val();
+	connection.connect(DEVICE_PATH);
 
 	$(window).data(
 		{'response_recorded': false,
@@ -52,6 +103,7 @@ $('form').submit(function(e) {
 
     $('form').fadeOut('fast');
 	show_first_image();
+
 });
 
 function get_random_word() {
@@ -75,13 +127,8 @@ function get_image(type, difficulty) {
     }
 }
 
-// TODO see fire-tms.js 
-function fire_tms(port) {
-/*
- http://www.fabiobiondi.com/blog/2014/02/html5-chrome-packaged-apps-and-arduino-bidirectional-communication-via-serial/
- https://github.com/GoogleChrome/chrome-app-samples/tree/master/samples/serial/ledtoggle
-*/
-
+function fire_tms() {
+	connection.send('1');
 }
 
 function show_first_image() {
@@ -94,7 +141,7 @@ function show_first_image() {
 	});
 	j++;
 	setTimeout(function() { //let user absorb word			
-        fire_tms(port);
+        fire_tms();
 		show_next_image(wordList[word]);
 		return;
 	}, time_between_frames);
@@ -105,10 +152,6 @@ function show_next_image(difficulty) {
 	if(j == images.length+1) { 
 		show_last_image();
 		return;
-	}
-	if(ii == num_iter) { 
-        log_data();
-		return; //end the program
 	}
 
 	$('.word').html(default_word);
@@ -140,6 +183,10 @@ function show_last_image() {
 	setTimeout(function() {
 		j = 0;
 		ii++;
+		if(ii == num_iter) { 
+			log_data();
+				return; //end the program
+			}
 		show_first_image();
 		return;
 	}, time_between_frames);
@@ -172,7 +219,7 @@ function log_data() {
 $(window).on('keypress',function(e) { //catches response
 	key = e.key;
 	//only get response if we are waiting for one and 
-    //have not already recorded one
+    	//have not already recorded one
 	if($(window).data('waiting') && !$(window).data('response_recorded')) {
 		d = new Date();
 		n = d.getTime();
@@ -197,26 +244,6 @@ $(window).on('keypress',function(e) { //catches response
 	}
 });
 
-$('#file_input').on('change',function(ev) {
-    var f = ev.target.files[0]; 
-
-    if (f) {
-      var r = new FileReader();
-      r.readAsText(f);
-      r.onloadend = function(e) { 
-	    var contents = e.target.result;
-      	lines = processData(contents);
-      	for(i = 1; i < lines.length; i++) {
-      		tmp = lines[i][0];
-      		tmp = tmp.split(',');
-      		wordList[tmp[0]] = tmp[1]; //populate word list
-      	}
-      }
-    } else { 
-      alert("Failed to load file");
-    }
-});
-
 function processData(csv) {
     var allTextLines = csv.split(/\r\n|\n/);
     var lines = [];
@@ -230,3 +257,26 @@ function processData(csv) {
     }
   	return lines;
 }
+
+$('#file_input').on('change',function(ev) {
+    var f = ev.target.files[0]; 
+
+    if (f) {
+      var r = new FileReader();
+      r.readAsText(f);
+      r.onloadend = function(e) { 
+	    var contents = e.target.result;
+      	lines = processData(contents);
+
+      	for(i = 1; i < lines.length; i++) {
+      		tmp = lines[i][0];
+      		tmp = tmp.split(',');
+      		wordList[tmp[0]] = tmp[1]; //populate word list
+      	}
+      }
+    } else { 
+      alert("Failed to load file");
+    }
+});
+
+

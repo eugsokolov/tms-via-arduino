@@ -1,0 +1,13 @@
+{
+  "name": "Keenan: Overconfidence Experiment",
+  "version": "2",
+  "manifest_version": 2,
+  "permissions": ["serial"],
+  "minimum_chrome_version": "23",
+  "app": {
+    "background": {
+      "scripts": ["js/launch.js"],
+      "transient": true
+    }
+  }
+}
