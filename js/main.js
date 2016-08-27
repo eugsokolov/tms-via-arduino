@@ -22,8 +22,8 @@ const default_word = 'yes or no';
 const num_pics = 3; // 3 taylors
 const time_between_frames = 1000; // milisec between each image
 
-
-
+//////////////////////////////////////////////////////////////
+// Do not change beyond this line
 
 const serial = chrome.serial;
 DEVICE_PATH = '';
@@ -77,6 +77,7 @@ SerialConnection.prototype.disconnect = function() {
 
 var connection = new SerialConnection();
 
+// Set variables to default
 var ii = 0; // iteration number
 var j = 0; // image number
 var k = 0; // responses 
@@ -278,5 +279,3 @@ $('#file_input').on('change',function(ev) {
       alert("Failed to load file");
     }
 });
-
-
