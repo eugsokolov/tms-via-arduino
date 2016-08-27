@@ -12,8 +12,12 @@ Using
 
 To set up Chrome App:
 1. Go to "chrome://extensions"
+
 2. Make sure option "Developer mode" is checked in top right
+
 3. Click "Load unpacked extension..."
+
 4. Point to the correct app directory
+
 5. A new project "Keenan: Overconfidence Experiment will appear" Click Launch to run!
 
