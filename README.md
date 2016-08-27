@@ -11,6 +11,7 @@ Using
 
 
 To set up Chrome App:
+
 1. Go to "chrome://extensions"
 
 2. Make sure option "Developer mode" is checked in top right
