@@ -24,3 +24,14 @@ To set up Chrome App:
 
 6. A new project "Keenan: Overconfidence Experiment" will appear. Click Launch to run!
 
+
+To Run the Experiment:
+1. Set images in the images/ folder to correspond to the correct timing to the instructor's desire. Configure the js/main.js file to display the images you wish to display during the easy, medium, and hard stages of the experiement.
+
+2. Follow onscreen instructions in the app that you launched, make sure to give correct input arguments (including the serial port on which Arduino TMS module is on). Images will be shown according to configuration in step 1.
+
+3. Run the experiment.
+
+4. A log file will download with recorded results
+
+5. Profit
