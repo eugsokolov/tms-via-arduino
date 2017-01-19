@@ -16,14 +16,16 @@ const hard = [
         'images/taylor2.jpg',
         'images/taylor3.jpg'
         ];
-const images = [easy, medium, hard];
 const isiImage = 'images/whitescreen.png'
 const default_word = 'yes or no';
 const num_pics = 3; // 3 taylors
 const time_between_frames = 1000; // milisec between each image
 
 //////////////////////////////////////////////////////////////
-// Do not change beyond this line
+// Do not change beyond this line!!!
+//////////////////////////////////////////////////////////////
+
+const images = [easy, medium, hard];
 
 const serial = chrome.serial;
 DEVICE_PATH = '';
