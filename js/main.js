@@ -16,11 +16,20 @@ const hard = [
         'images/taylor2.jpg',
         'images/taylor3.jpg'
         ];
-const images = [easy, medium, hard];
+
 const isiImage = 'images/whitescreen.png'
 const default_word = 'yes or no';
 const num_pics = 3; // 3 taylors
 const time_between_frames = 1000; // milisec between each image
+
+/*
+********
+DO NOT TOUCH CODE BEYOND THIS POINT!
+********
+*/
+
+const images = [easy, medium, hard];
+
 var ii = 0; // iteration number
 var j = 0; // image number
 var k = 0; // responses 
@@ -30,6 +39,7 @@ var port = 'COM1';
 var num_iter = 0;
 var wordList = {};
 var text_output = "";
+var responses = "";
 
 /*
 if(!window.chrome) {
