@@ -2,7 +2,7 @@ import serial
 import csv
 import random
 import time, datetime
-import os
+import os, sys
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 
@@ -16,7 +16,8 @@ plt.figure(figsize=(xaxis,yaxis))
 plt.ion()
 plt.axis('off')
 plt.plot()
-if fullscreen is True: plt.get_current_fig_manager().window.state('zoomed')
+if os.name != 'posix':
+    if fullscreen is True: plt.get_current_fig_manager().window.state('zoomed')
 plt.show(block=False)
 objList = []
 
@@ -215,6 +216,12 @@ def log_user_data(info, filename):
 
 def start():
    config = process_config("config.csv")
+   try:
+       port = config['TMS port']
+       serial.Serial(port, 230400)
+   except serial.serialutil.SerialException:
+       print('WRONG SERIAL PORT!!! Please change')
+       sys.exit(1)
    f = input_user_data(config['name'], config['sex'], config['Results Folder'])
    info = process_user(config)
    log_user_data(info, f)
