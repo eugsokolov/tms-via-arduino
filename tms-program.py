@@ -12,6 +12,9 @@ fullscreen = True
 xaxis = 16
 yaxis = 13
 
+def press(event):
+    print(event.key)
+
 plt.figure(figsize=(xaxis,yaxis))
 plt.ion()
 plt.axis('off')
@@ -68,9 +71,9 @@ def show_image(obj, screen, typeOut):
 #To be used with tms.ino
 def fire_tms(port):
      print("FIRING TMS : " + str(port))
-     arduino = serial.Serial(port, 230400)
-     arduino.write(b'1')
-     arduino.close()
+     #arduino = serial.Serial(port, 230400)
+     #arduino.write(b'1')
+     #arduino.close()
 
 #Determine if TMS should be triggered, given input array or randomization
 def determine_fire(fireiter, i):
@@ -111,9 +114,18 @@ def process_type(config, i):
    else: error("Error in configuration \"TMS before or after\", input must be \"before/after\"")
 
    #Process how to end event
+   react = 0
+   pressed = "None"
    if config['event end'] == "keypress":
-     input("waiting for keypress to end...")
-#TODO fix waiting for input bug on Windows
+     start = datetime.datetime.now()
+     event = plt.waitforbuttonpress(timeout=5)
+     if event == True:
+        resp = 'Yes'
+     elif event == False:
+        resp = 'No'
+     elif event == None:
+        react = 'timed out'
+     react= (datetime.datetime.now() - start).total_seconds()
    elif config['event end'] == "time":
      time.sleep(float(config['event end time'])/1000)
    else: error("Error in configuration \"event end\", input must be \"keypress/time\"")
@@ -122,11 +134,11 @@ def process_type(config, i):
    if config['refresh'] == "yes":
      pass
    elif config['refresh'] == "no":
-     pass 
+     pass
 #TODO
    else: error("Error in configuration \"refresh\", input must be \"yes/no\"")
 
-   return fire, out
+   return fire, out, (resp, react)
 
 def process_mouse(config, i):
 #TODO
@@ -137,10 +149,11 @@ def process_mouse(config, i):
 def process_user(config):
    firelist = []
    outlist = []
+   reactlist = []
    for i in range(1, int(config['iterations per user'])+1):
      print(i)
      if (config['type'] == 'image') or (config['type'] == 'text'):
-         fired, out = process_type(config, i)
+         fired, out, reaction = process_type(config, i)
      elif (config['type'] == 'mouse'):
          error("mouse not yet implemented")
          fired, out = process_mouse(config, i)
@@ -148,17 +161,20 @@ def process_user(config):
 
      if config['ISI step'] != 'none':
         show_image(config['ISI step'], config['screen'], 'image')
-        time.sleep(float(config['ISI step duration'])/1000)     
+        time.sleep(float(config['ISI step duration'])/1000)
 
      if fired is True: firelist.append(i)
-     outlist.append(out)     
+     if reaction:
+        reactlist.append(reaction)
+     outlist.append(out)
 
    if config['ISI end'] != 'none':
      show_image(config['ISI end'], config['screen'], 'image')
-     time.sleep(float(config['ISI end duration'])/1000)     
+     time.sleep(float(config['ISI end duration'])/1000)
 
    config['fire iteration'] = firelist
    config['order list'] = outlist
+   config['reaction times'] = reactlist
    return config
 
 #Process the input images/text to create global objList of image/text objects to yield
@@ -194,13 +210,13 @@ def process_config(filename):
    config.pop('Name')
    if config['fire iteration'] != "random" or config['fire iteration'] != "all":
      s = config.pop('fire iteration')
-     fireiter = [int(i) for i in s[1:-1].split(',')] 
+     fireiter = [int(i) for i in s[1:-1].split(',')]
      config['fire iteration'] = fireiter
 
-   return config     
+   return config
 
 def input_user_data(name, sex, logFolder):
-   d = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S') 
+   d = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
    filename = logFolder + '/' + name + "-" + d + ".log"
    with open(filename, 'w') as f:
       f.write("Time," + d + '\n')
@@ -218,7 +234,7 @@ def start():
    config = process_config("config.csv")
    try:
        port = config['TMS port']
-       serial.Serial(port, 230400)
+       #serial.Serial(port, 230400)
    except serial.serialutil.SerialException:
        print('WRONG SERIAL PORT!!! Please change')
        sys.exit(1)
