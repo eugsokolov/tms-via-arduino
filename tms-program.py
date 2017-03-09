@@ -71,9 +71,9 @@ def show_image(obj, screen, typeOut):
 #To be used with tms.ino
 def fire_tms(port):
      print("FIRING TMS : " + str(port))
-     #arduino = serial.Serial(port, 230400)
-     #arduino.write(b'1')
-     #arduino.close()
+     arduino = serial.Serial(port, 230400)
+     arduino.write(b'1')
+     arduino.close()
 
 #Determine if TMS should be triggered, given input array or randomization
 def determine_fire(fireiter, i):
@@ -115,7 +115,7 @@ def process_type(config, i):
 
    #Process how to end event
    react = 0
-   pressed = "None"
+   resp = "None"
    if config['event end'] == "keypress":
      start = datetime.datetime.now()
      event = plt.waitforbuttonpress(timeout=5)
@@ -234,7 +234,7 @@ def start():
    config = process_config("config.csv")
    try:
        port = config['TMS port']
-       #serial.Serial(port, 230400)
+       serial.Serial(port, 230400)
    except serial.serialutil.SerialException:
        print('WRONG SERIAL PORT!!! Please change')
        sys.exit(1)
