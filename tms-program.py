@@ -225,7 +225,8 @@ def input_user_data(name, sex, logFolder):
           f.write("Gender," + sex + '\n')
        return filename
    except FileNotFoundError:
-       sys.exit('Please create log directory: {}'.format(logFolder))
+       print('Please create log directory: {}'.format(logFolder))
+       sys.exit(1)
 
 def log_user_data(info, filename):
    with open(filename, 'a') as f:
@@ -239,7 +240,8 @@ def start():
        port = config['TMS port']
        serial.Serial(port, 230400)
    except serial.serialutil.SerialException:
-       sys.exit('WRONG SERIAL PORT!!! Please change')
+       print('WRONG SERIAL PORT!!! Please change')
+       sys.exit(1)
    f = input_user_data(config['name'], config['sex'], config['Results Folder'])
    info = process_user(config)
    log_user_data(info, f)
