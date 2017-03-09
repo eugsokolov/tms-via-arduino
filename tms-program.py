@@ -118,7 +118,7 @@ def process_type(config, i):
    resp = "None"
    if config['event end'] == "keypress":
      start = datetime.datetime.now()
-     event = plt.waitforbuttonpress(timeout=5)
+     event = plt.waitforbuttonpress(timeout=float(config['event end time'])/1000)
      if event == True:
         resp = 'Yes'
      elif event == False:
